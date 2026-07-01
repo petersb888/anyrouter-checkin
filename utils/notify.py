@@ -87,7 +87,10 @@ class NotificationKit:
 			raise ValueError('Server Push key not configured')
 
 		data = {'title': title, 'desp': content}
-		self._post_json('Server Push', f'https://sctapi.ftqq.com/{self.server_push_key}.send', data)
+		url = self.server_push_key
+		if not url.startswith(('http://', 'https://')):
+			url = f'https://sctapi.ftqq.com/{self.server_push_key}.send'
+		self._post_json('Server Push', url, data)
 
 	def send_dingtalk(self, title: str, content: str):
 		if not self.dingding_webhook:
