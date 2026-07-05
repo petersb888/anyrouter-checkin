@@ -65,11 +65,19 @@ def save_balance_hash(balance_hash):
 
 def generate_balance_hash(balances):
 	"""生成余额数据的hash"""
-	simple_balances = (
-		{k: {'quota': v.get('quota'), 'used': v.get('used')} for k, v in balances.items()} if balances else {}
-	)
+	simple_balances = ({k: {'quota': v.get('quota')} for k, v in balances.items()} if balances else {})
 	balance_json = json.dumps(simple_balances, sort_keys=True, separators=(',', ':'))
 	return hashlib.sha256(balance_json.encode('utf-8')).hexdigest()[:16]
+
+
+def should_notify_balance_change(last_balance_hash: str | None, current_balance_hash: str | None) -> bool:
+	"""Only notify after a saved baseline exists and the balance snapshot changed."""
+	return bool(last_balance_hash and current_balance_hash and current_balance_hash != last_balance_hash)
+
+
+def should_notify_check_in_reward(detail: dict) -> bool:
+	"""Notify only when this check-in increases the current balance."""
+	return detail.get('balance_change', 0) > 0
 
 
 def parse_cookies(cookies_data):
@@ -523,10 +531,8 @@ async def main():
 			should_notify_this_account = False
 
 			if not success:
-				should_notify_this_account = True
-				need_notify = True
 				account_name = account.get_display_name(i)
-				print(f'[NOTIFY] {account_name} failed, will send notification')
+				print(f'[INFO] {account_name} failed, notification skipped unless check-in increases balance')
 
 			if user_info_after and user_info_after.get('success'):
 				current_quota = user_info_after['quota']
@@ -571,31 +577,33 @@ async def main():
 		except Exception as e:
 			account_name = account.get_display_name(i)
 			print(f'[FAILED] {account_name} processing exception: {e}')
-			need_notify = True
-			notification_content.append(f'[FAIL] {account_name} exception: {str(e)[:50]}...')
+			print('[INFO] Exception notification skipped unless check-in increases balance')
 
 	current_balance_hash = generate_balance_hash(current_balances) if current_balances else None
 	if current_balance_hash:
 		if last_balance_hash is None:
-			balance_changed = True
-			need_notify = True
-			print('[NOTIFY] First run detected, will send notification with current balances')
-		elif current_balance_hash != last_balance_hash:
-			balance_changed = True
-			need_notify = True
-			print('[NOTIFY] Balance changes detected, will send notification')
+			print('[INFO] First balance snapshot saved; notification skipped until balance changes')
+		elif should_notify_balance_change(last_balance_hash, current_balance_hash):
+			print('[INFO] Balance snapshot changed; notification skipped unless this check-in increased balance')
 		else:
 			print('[INFO] No balance changes detected')
 
-	if balance_changed:
-		for i, account in enumerate(accounts):
-			account_key = f'account_{i + 1}'
-			if account_key in account_check_in_details:
-				detail = account_check_in_details[account_key]
+	for i, account in enumerate(accounts):
+		account_key = f'account_{i + 1}'
+		if account_key in account_check_in_details:
+			detail = account_check_in_details[account_key]
+			if should_notify_check_in_reward(detail):
+				need_notify = True
+				balance_changed = True
 				account_name = detail['name']
 				account_result = format_check_in_notification(detail)
 				if not any(account_name in item for item in notification_content):
 					notification_content.append(account_result)
+
+	if balance_changed:
+		print('[NOTIFY] Check-in increased balance, will send notification')
+	else:
+		print('[INFO] Check-in did not increase balance, notification skipped')
 
 	if current_balance_hash:
 		save_balance_hash(current_balance_hash)
@@ -631,9 +639,9 @@ async def main():
 
 		print(notify_content)
 		notify.push_message('AnyRouter Check-in Alert', notify_content, msg_type='text')
-		print('[NOTIFY] Notification sent due to failures or balance changes')
+		print('[NOTIFY] Notification sent because check-in increased balance')
 	else:
-		print('[INFO] All accounts successful and no balance changes detected, notification skipped')
+		print('[INFO] No check-in balance increase detected, notification skipped')
 
 	sys.exit(0 if success_count > 0 else 1)
 
