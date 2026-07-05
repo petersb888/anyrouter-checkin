@@ -80,6 +80,11 @@ def should_notify_check_in_reward(detail: dict) -> bool:
 	return detail.get('balance_change', 0) > 0
 
 
+def should_notify_check_in_failure(success: bool) -> bool:
+	"""Notify when check-in failed, including expired cookies or auth failures."""
+	return not success
+
+
 def parse_cookies(cookies_data):
 	"""解析 cookies 数据"""
 	if isinstance(cookies_data, dict):
@@ -530,9 +535,11 @@ async def main():
 
 			should_notify_this_account = False
 
-			if not success:
+			if should_notify_check_in_failure(success):
+				should_notify_this_account = True
+				need_notify = True
 				account_name = account.get_display_name(i)
-				print(f'[INFO] {account_name} failed, notification skipped unless check-in increases balance')
+				print(f'[NOTIFY] {account_name} failed, will send notification')
 
 			if user_info_after and user_info_after.get('success'):
 				current_quota = user_info_after['quota']
@@ -577,7 +584,8 @@ async def main():
 		except Exception as e:
 			account_name = account.get_display_name(i)
 			print(f'[FAILED] {account_name} processing exception: {e}')
-			print('[INFO] Exception notification skipped unless check-in increases balance')
+			need_notify = True
+			notification_content.append(f'[FAIL] {account_name} exception: {str(e)[:50]}...')
 
 	current_balance_hash = generate_balance_hash(current_balances) if current_balances else None
 	if current_balance_hash:
@@ -602,6 +610,8 @@ async def main():
 
 	if balance_changed:
 		print('[NOTIFY] Check-in increased balance, will send notification')
+	elif need_notify:
+		print('[NOTIFY] Check-in failure detected, will send notification')
 	else:
 		print('[INFO] Check-in did not increase balance, notification skipped')
 
@@ -639,9 +649,9 @@ async def main():
 
 		print(notify_content)
 		notify.push_message('AnyRouter Check-in Alert', notify_content, msg_type='text')
-		print('[NOTIFY] Notification sent because check-in increased balance')
+		print('[NOTIFY] Notification sent because check-in increased balance or failed')
 	else:
-		print('[INFO] No check-in balance increase detected, notification skipped')
+		print('[INFO] No check-in balance increase or failure detected, notification skipped')
 
 	sys.exit(0 if success_count > 0 else 1)
 

@@ -4,7 +4,7 @@ from pathlib import Path
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
-from checkin import generate_balance_hash, should_notify_check_in_reward
+from checkin import generate_balance_hash, should_notify_check_in_failure, should_notify_check_in_reward
 
 
 def test_balance_hash_changes_when_quota_changes():
@@ -44,3 +44,11 @@ def test_check_in_reward_skips_when_quota_is_same():
 
 def test_check_in_reward_skips_when_quota_decreases():
 	assert should_notify_check_in_reward({'balance_change': -5.0}) is False
+
+
+def test_check_in_failure_notifies():
+	assert should_notify_check_in_failure(False) is True
+
+
+def test_successful_check_in_does_not_notify_as_failure():
+	assert should_notify_check_in_failure(True) is False
