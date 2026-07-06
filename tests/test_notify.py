@@ -179,3 +179,38 @@ def test_push_message(notification_kit, monkeypatch):
 
 	for method_mock in mocks.values():
 		assert method_mock.called
+
+
+def test_push_message_only_uses_configured_channels(monkeypatch):
+	env_names = [
+		'EMAIL_USER',
+		'EMAIL_PASS',
+		'EMAIL_TO',
+		'PUSHPLUS_TOKEN',
+		'SERVERPUSHKEY',
+		'DINGDING_WEBHOOK',
+		'FEISHU_WEBHOOK',
+		'WEIXIN_WEBHOOK',
+		'GOTIFY_URL',
+		'GOTIFY_TOKEN',
+		'TELEGRAM_BOT_TOKEN',
+		'TELEGRAM_CHAT_ID',
+		'BARK_KEY',
+	]
+	for env_name in env_names:
+		monkeypatch.delenv(env_name, raising=False)
+	monkeypatch.setenv('SERVERPUSHKEY', 'server_push_key')
+
+	kit = NotificationKit()
+	server_push = MagicMock()
+	pushplus = MagicMock()
+	email = MagicMock()
+	monkeypatch.setattr(kit, 'send_serverPush', server_push)
+	monkeypatch.setattr(kit, 'send_pushplus', pushplus)
+	monkeypatch.setattr(kit, 'send_email', email)
+
+	kit.push_message('title', 'content')
+
+	server_push.assert_called_once_with('title', 'content')
+	pushplus.assert_not_called()
+	email.assert_not_called()

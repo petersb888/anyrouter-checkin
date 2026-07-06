@@ -622,8 +622,10 @@ async def main():
 		summary = [
 			'[STATS] Check-in result statistics:',
 			f'[SUCCESS] Success: {success_count}/{total_count}',
-			f'[FAIL] Failed: {total_count - success_count}/{total_count}',
 		]
+		failed_count = total_count - success_count
+		if failed_count:
+			summary.append(f'[FAIL] Failed: {failed_count}/{total_count}')
 
 		if success_count == total_count:
 			summary.append('[SUCCESS] All accounts check-in successful!')

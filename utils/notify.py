@@ -162,18 +162,27 @@ class NotificationKit:
 
 	def push_message(self, title: str, content: str, msg_type: Literal['text', 'html'] = 'text'):
 		notifications = [
-			('Email', lambda: self.send_email(title, content, msg_type)),
-			('PushPlus', lambda: self.send_pushplus(title, content)),
-			('Server Push', lambda: self.send_serverPush(title, content)),
-			('DingTalk', lambda: self.send_dingtalk(title, content)),
-			('Feishu', lambda: self.send_feishu(title, content)),
-			('WeChat Work', lambda: self.send_wecom(title, content)),
-			('Gotify', lambda: self.send_gotify(title, content)),
-			('Telegram', lambda: self.send_telegram(title, content)),
-			('Bark', lambda: self.send_bark(title, content)),
+			('Email', bool(self.email_user and self.email_pass and self.email_to), lambda: self.send_email(title, content, msg_type)),
+			('PushPlus', bool(self.pushplus_token), lambda: self.send_pushplus(title, content)),
+			('Server Push', bool(self.server_push_key), lambda: self.send_serverPush(title, content)),
+			('DingTalk', bool(self.dingding_webhook), lambda: self.send_dingtalk(title, content)),
+			('Feishu', bool(self.feishu_webhook), lambda: self.send_feishu(title, content)),
+			('WeChat Work', bool(self.weixin_webhook), lambda: self.send_wecom(title, content)),
+			('Gotify', bool(self.gotify_url and self.gotify_token), lambda: self.send_gotify(title, content)),
+			(
+				'Telegram',
+				bool(self.telegram_bot_token and self.telegram_chat_id),
+				lambda: self.send_telegram(title, content),
+			),
+			('Bark', bool(self.bark_key), lambda: self.send_bark(title, content)),
 		]
 
-		for name, func in notifications:
+		enabled_notifications = [(name, func) for name, enabled, func in notifications if enabled]
+		if not enabled_notifications:
+			print('[NOTIFY] No notification channel configured')
+			return
+
+		for name, func in enabled_notifications:
 			try:
 				func()
 				print(f'[{name}]: Message push successful!')
