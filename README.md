@@ -109,9 +109,9 @@
 ]
 ```
 
-获取方式与上面的 AnyRouter Session 教程相同：在浏览器开发者工具的 Application/Cookies 中复制 `session`，在 Network 的已登录请求中复制 `New-Api-User`。不要把 Cookie 或用户标识写进仓库文件，只保存到 GitHub Environment Secret `ANYROUTER_ACCOUNTS`。
+获取方式与上面的 AnyRouter Session 教程相同：在浏览器开发者工具的 Application/Cookies 中复制 `session`，在 Network 的已登录请求中复制 `New-Api-User`。不要把 Cookie 或用户标识写进仓库文件，只保存到 GitHub Environment Secret `PSYCHE_ACCOUNTS`。
 
-现有 Cloudflare 随机定时触发器会运行同一个 workflow，因此把 `psyche` 账号加入 `ANYROUTER_ACCOUNTS` 后会与其它账号一起定时签到，无需新增第二套定时器。
+现有 Cloudflare 随机定时触发器会运行同一个 workflow。AnyRouter 继续使用 `ANYROUTER_ACCOUNTS`，无名公益站单独使用 `PSYCHE_ACCOUNTS`，两个 Secret 会在一次任务中合并执行，无需新增第二套定时器。
 
 如果使用 session cookies 登录，接下来获取 cookies 与 api_user 的值。
 

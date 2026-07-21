@@ -192,36 +192,40 @@ class AccountConfig:
 		return self.name if self.name else f'Account {index + 1}'
 
 
-def load_accounts_config() -> list[AccountConfig] | None:
-	"""从环境变量加载账号配置"""
-	accounts_str = os.getenv('ANYROUTER_ACCOUNTS')
-	if not accounts_str:
-		print('ERROR: ANYROUTER_ACCOUNTS environment variable not found')
-		return None
-
+def _parse_accounts_config(
+	accounts_str: str,
+	env_name: str,
+	default_provider: str,
+	start_index: int,
+) -> list[AccountConfig] | None:
+	"""解析一个账号 Secret，并为该 Secret 设置默认 provider。"""
 	try:
 		accounts_data = json.loads(accounts_str)
 	except json.JSONDecodeError as e:
-		print(f'ERROR: ANYROUTER_ACCOUNTS JSON 解析失败: {e}')
+		print(f'ERROR: {env_name} JSON 解析失败: {e}')
 		print('HINT: 常见原因 - 末尾多余逗号、使用了单引号、包含注释、或换行格式问题')
 		return None
 
 	try:
 		if not isinstance(accounts_data, list):
-			print('ERROR: Account configuration must use array format [{}]')
+			print(f'ERROR: {env_name} must use array format []')
 			return None
 
 		accounts = []
-		for i, account_dict in enumerate(accounts_data):
+		for offset, account_dict in enumerate(accounts_data):
+			i = start_index + offset
 			if not isinstance(account_dict, dict):
-				print(f'ERROR: Account {i + 1} configuration format is incorrect')
+				print(f'ERROR: {env_name} account {i + 1} configuration format is incorrect')
 				return None
+			account_dict = dict(account_dict)
+			account_dict.setdefault('provider', default_provider)
 
 			if 'api_user' not in account_dict:
 				has_login = account_dict.get('email') and account_dict.get('password')
 				if not has_login:
 					print(
-						f'ERROR: Account {i + 1} missing required field (api_user) - only email+password login can omit it'
+						f'ERROR: {env_name} account {i + 1} missing required field (api_user) '
+						'- only email+password login can omit it'
 					)
 					return None
 
@@ -229,16 +233,46 @@ def load_accounts_config() -> list[AccountConfig] | None:
 			has_login = account_dict.get('email') and account_dict.get('password')
 
 			if not has_cookies and not has_login:
-				print(f'ERROR: Account {i + 1} must have either cookies or email+password')
+				print(f'ERROR: {env_name} account {i + 1} must have either cookies or email+password')
 				return None
 
 			if 'name' in account_dict and not account_dict['name']:
-				print(f'ERROR: Account {i + 1} name field cannot be empty')
+				print(f'ERROR: {env_name} account {i + 1} name field cannot be empty')
 				return None
 
 			accounts.append(AccountConfig.from_dict(account_dict, i))
 
 		return accounts
 	except Exception as e:
-		print(f'ERROR: Account configuration format is incorrect: {e}')
+		print(f'ERROR: {env_name} account configuration format is incorrect: {e}')
 		return None
+
+
+def load_accounts_config() -> list[AccountConfig] | None:
+	"""从分站点环境变量加载账号配置，兼容原有 ANYROUTER_ACCOUNTS。"""
+	account_sources = (
+		('ANYROUTER_ACCOUNTS', 'anyrouter'),
+		('PSYCHE_ACCOUNTS', 'psyche'),
+	)
+	accounts: list[AccountConfig] = []
+	configured_sources = 0
+	for env_name, default_provider in account_sources:
+		accounts_str = os.getenv(env_name, '').strip()
+		if not accounts_str:
+			continue
+		configured_sources += 1
+		parsed_accounts = _parse_accounts_config(
+			accounts_str,
+			env_name,
+			default_provider,
+			len(accounts),
+		)
+		if parsed_accounts is None:
+			return None
+		accounts.extend(parsed_accounts)
+
+	if not configured_sources:
+		print('ERROR: ANYROUTER_ACCOUNTS or PSYCHE_ACCOUNTS environment variable is required')
+		return None
+
+	return accounts

@@ -1,6 +1,6 @@
 import json
 
-from utils.config import AppConfig, ProviderConfig
+from utils.config import AppConfig, ProviderConfig, load_accounts_config
 
 
 def test_builtin_provider_profile_persistence_defaults(monkeypatch):
@@ -60,3 +60,37 @@ def test_provider_from_dict_inherits_profile_persistence_from_defaults():
 	)
 
 	assert provider.persist_profile is True
+
+
+def test_accounts_can_be_loaded_from_separate_site_secrets(monkeypatch):
+	monkeypatch.delenv('ANYROUTER_ACCOUNTS', raising=False)
+	monkeypatch.setenv(
+		'PSYCHE_ACCOUNTS',
+		json.dumps([{'name': '公益站', 'cookies': {'session': 'session-value'}, 'api_user': '12345'}]),
+	)
+
+	accounts = load_accounts_config()
+
+	assert accounts is not None
+	assert len(accounts) == 1
+	assert accounts[0].provider == 'psyche'
+	assert accounts[0].get_display_name(0) == '公益站'
+
+
+def test_accounts_from_both_secrets_are_combined_without_overwriting(monkeypatch):
+	monkeypatch.setenv(
+		'ANYROUTER_ACCOUNTS',
+		json.dumps([{'name': 'AnyRouter', 'cookies': {'session': 'a'}, 'api_user': '1'}]),
+	)
+	monkeypatch.setenv(
+		'PSYCHE_ACCOUNTS',
+		json.dumps([{'name': '公益站', 'cookies': {'session': 'b'}, 'api_user': '2'}]),
+	)
+
+	accounts = load_accounts_config()
+
+	assert accounts is not None
+	assert [(account.provider, account.get_display_name(index)) for index, account in enumerate(accounts)] == [
+		('anyrouter', 'AnyRouter'),
+		('psyche', '公益站'),
+	]
