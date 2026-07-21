@@ -207,8 +207,10 @@ def _parse_accounts_config(
 		return None
 
 	try:
-		if not isinstance(accounts_data, list):
-			print(f'ERROR: {env_name} must use array format []')
+		if isinstance(accounts_data, dict):
+			accounts_data = [accounts_data]
+		elif not isinstance(accounts_data, list):
+			print(f'ERROR: {env_name} must use an account object or array format []')
 			return None
 
 		accounts = []

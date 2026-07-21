@@ -77,6 +77,20 @@ def test_accounts_can_be_loaded_from_separate_site_secrets(monkeypatch):
 	assert accounts[0].get_display_name(0) == '公益站'
 
 
+def test_single_account_object_is_accepted_for_site_secret(monkeypatch):
+	monkeypatch.delenv('ANYROUTER_ACCOUNTS', raising=False)
+	monkeypatch.setenv(
+		'PSYCHE_ACCOUNTS',
+		json.dumps({'name': '公益站', 'cookies': {'session': 'session-value'}, 'api_user': '12345'}),
+	)
+
+	accounts = load_accounts_config()
+
+	assert accounts is not None
+	assert len(accounts) == 1
+	assert accounts[0].provider == 'psyche'
+
+
 def test_accounts_from_both_secrets_are_combined_without_overwriting(monkeypatch):
 	monkeypatch.setenv(
 		'ANYROUTER_ACCOUNTS',
