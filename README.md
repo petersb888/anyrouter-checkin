@@ -7,7 +7,7 @@
 [![Code style: ruff](https://img.shields.io/badge/code%20style-ruff-000000.svg)](https://github.com/astral-sh/ruff)
 [![License](https://img.shields.io/github/license/millylee/anyrouter-check-in)](LICENSE)
 
-多平台多账号自动签到，理论上支持所有 NewAPI、OneAPI 平台，目前内置支持 Any Router 与 Agent Router，其它可根据文档进行摸索配置。
+多平台多账号自动签到，理论上支持所有 NewAPI、OneAPI 平台，目前内置支持 Any Router、Agent Router 与无名公益站（welfare.0xpsyche.me），其它可根据文档进行摸索配置。
 
 推荐搭配使用[Auo](https://github.com/millylee/auo)，支持任意 Claude Code Token 切换的工具。
 
@@ -90,7 +90,28 @@
 
 - 如果未提供 `provider` 字段，默认使用 `anyrouter`（向后兼容）
 - 如果未提供 `name` 字段，会使用 `Account 1`、`Account 2` 等默认名称
-- `anyrouter` 与 `agentrouter` 配置已内置，无需填写
+- `anyrouter`、`agentrouter` 与 `psyche` 配置已内置，无需填写
+
+### 无名公益站（welfare.0xpsyche.me）
+
+该站使用新版 New API 签到接口，并且关闭了密码登录，只开放 Linux.do OAuth。请先在浏览器登录，再使用 Session 配置：
+
+```json
+[
+  {
+    "name": "无名公益站",
+    "provider": "psyche",
+    "cookies": {
+      "session": "浏览器中的 session cookie"
+    },
+    "api_user": "请求头 New-Api-User 的值"
+  }
+]
+```
+
+获取方式与上面的 AnyRouter Session 教程相同：在浏览器开发者工具的 Application/Cookies 中复制 `session`，在 Network 的已登录请求中复制 `New-Api-User`。不要把 Cookie 或用户标识写进仓库文件，只保存到 GitHub Environment Secret `ANYROUTER_ACCOUNTS`。
+
+现有 Cloudflare 随机定时触发器会运行同一个 workflow，因此把 `psyche` 账号加入 `ANYROUTER_ACCOUNTS` 后会与其它账号一起定时签到，无需新增第二套定时器。
 
 如果使用 session cookies 登录，接下来获取 cookies 与 api_user 的值。
 
@@ -182,7 +203,7 @@
 
 ## 自定义 Provider 配置（可选）
 
-默认情况下，`anyrouter`、`agentrouter` 已内置配置，无需额外设置。如果你需要使用其他服务商，可以通过环境变量 `PROVIDERS` 配置：
+默认情况下，`anyrouter`、`agentrouter`、`psyche` 已内置配置，无需额外设置。如果你需要使用其他服务商，可以通过环境变量 `PROVIDERS` 配置：
 
 ### 基础配置（仅域名）
 
@@ -264,10 +285,14 @@
   - `bypass_method: "waf_cookies"`（需要获取 `acw_tc`）
   - `sign_in_path: null`（查询用户信息时自动签到）
   - `use_proxy: true`
+- `psyche`：
+  - `domain: "https://welfare.0xpsyche.me"`
+  - `sign_in_path: "/api/user/checkin"`
+  - 无需 WAF Cookie；使用浏览器登录后的 `session` 与 `New-Api-User`
 
 **重要提示**：
 
-- `PROVIDERS` 是可选的，不配置则使用内置的 `anyrouter` 和 `agentrouter`
+- `PROVIDERS` 是可选的，不配置则使用内置的 `anyrouter`、`agentrouter` 和 `psyche`
 - 自定义的 provider 配置会覆盖同名的默认配置
 
 ## 代理配置（可选）

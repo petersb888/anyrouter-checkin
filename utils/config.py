@@ -106,6 +106,18 @@ class AppConfig:
 				use_proxy=True,
 				persist_profile=False,
 			),
+			'psyche': ProviderConfig(
+				name='psyche',
+				domain='https://welfare.0xpsyche.me',
+				login_path='/login',
+				sign_in_path='/api/user/checkin',
+				user_info_path='/api/user/self',
+				api_user_key='new-api-user',
+				bypass_method=None,
+				waf_cookie_names=None,
+				use_proxy=False,
+				persist_profile=False,
+			),
 		}
 
 		# 尝试从环境变量加载自定义 providers

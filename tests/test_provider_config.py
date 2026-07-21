@@ -10,6 +10,19 @@ def test_builtin_provider_profile_persistence_defaults(monkeypatch):
 
 	assert config.providers['anyrouter'].persist_profile is True
 	assert config.providers['agentrouter'].persist_profile is False
+	assert config.providers['psyche'].persist_profile is False
+
+
+def test_psyche_provider_uses_new_api_checkin_endpoint(monkeypatch):
+	monkeypatch.delenv('PROVIDERS', raising=False)
+
+	provider = AppConfig.load_from_env().providers['psyche']
+
+	assert provider.domain == 'https://welfare.0xpsyche.me'
+	assert provider.sign_in_path == '/api/user/checkin'
+	assert provider.user_info_path == '/api/user/self'
+	assert provider.api_user_key == 'new-api-user'
+	assert provider.needs_waf_cookies() is False
 
 
 def test_provider_profile_persistence_can_override_builtin(monkeypatch):
