@@ -221,6 +221,14 @@ def _parse_accounts_config(
 				return None
 			account_dict = dict(account_dict)
 			account_dict.setdefault('provider', default_provider)
+			configured_name = account_dict.get('name')
+			if (
+				default_provider == 'psyche'
+				and isinstance(configured_name, str)
+				and configured_name
+				and not configured_name.strip('?')
+			):
+				account_dict['name'] = '无名公益站'
 
 			if 'api_user' not in account_dict:
 				has_login = account_dict.get('email') and account_dict.get('password')

@@ -91,6 +91,19 @@ def test_single_account_object_is_accepted_for_site_secret(monkeypatch):
 	assert accounts[0].provider == 'psyche'
 
 
+def test_psyche_name_recovers_from_powershell_question_mark_encoding(monkeypatch):
+	monkeypatch.delenv('ANYROUTER_ACCOUNTS', raising=False)
+	monkeypatch.setenv(
+		'PSYCHE_ACCOUNTS',
+		json.dumps({'name': '?????', 'cookies': {'session': 'session-value'}, 'api_user': '12345'}),
+	)
+
+	accounts = load_accounts_config()
+
+	assert accounts is not None
+	assert accounts[0].get_display_name(0) == '无名公益站'
+
+
 def test_accounts_from_both_secrets_are_combined_without_overwriting(monkeypatch):
 	monkeypatch.setenv(
 		'ANYROUTER_ACCOUNTS',
