@@ -85,6 +85,17 @@ def should_notify_check_in_failure(success: bool) -> bool:
 	return not success
 
 
+def select_notification_content(
+	failure_notification_content: list[str], reward_notification_content: list[str]
+) -> tuple[str, list[str]]:
+	"""Make failures unmissable when a mixed account run has both outcomes."""
+	if failure_notification_content:
+		return 'AnyRouter 签到失败告警', failure_notification_content
+	if reward_notification_content:
+		return 'AnyRouter 签到奖励通知', reward_notification_content
+	return '', []
+
+
 def parse_cookies(cookies_data):
 	"""解析 cookies 数据"""
 	if isinstance(cookies_data, dict):
@@ -520,10 +531,10 @@ async def main():
 
 	success_count = 0
 	total_count = len(accounts)
-	notification_content = []
+	failure_notification_content = []
+	reward_notification_content = []
 	current_balances = {}
 	account_check_in_details = {}
-	need_notify = False
 	balance_changed = False
 
 	for i, account in enumerate(accounts):
@@ -537,9 +548,8 @@ async def main():
 
 			if should_notify_check_in_failure(success):
 				should_notify_this_account = True
-				need_notify = True
 				account_name = account.get_display_name(i)
-				print(f'[NOTIFY] {account_name} failed, will send notification')
+				print(f'[NOTIFY] {account_name} failed, will send a separate failure alert')
 
 			if user_info_after and user_info_after.get('success'):
 				current_quota = user_info_after['quota']
@@ -579,13 +589,12 @@ async def main():
 					account_result += f'\n{user_info_after["display"]}'
 				elif user_info_after:
 					account_result += f'\n{user_info_after.get("error", "Unknown error")}'
-				notification_content.append(account_result)
+				failure_notification_content.append(account_result)
 
 		except Exception as e:
 			account_name = account.get_display_name(i)
 			print(f'[FAILED] {account_name} processing exception: {e}')
-			need_notify = True
-			notification_content.append(f'[FAIL] {account_name} exception: {str(e)[:50]}...')
+			failure_notification_content.append(f'[FAIL] {account_name} exception: {str(e)[:50]}...')
 
 	current_balance_hash = generate_balance_hash(current_balances) if current_balances else None
 	if current_balance_hash:
@@ -601,17 +610,20 @@ async def main():
 		if account_key in account_check_in_details:
 			detail = account_check_in_details[account_key]
 			if should_notify_check_in_reward(detail):
-				need_notify = True
 				balance_changed = True
 				account_name = detail['name']
 				account_result = format_check_in_notification(detail)
-				if not any(account_name in item for item in notification_content):
-					notification_content.append(account_result)
+				reward_notification_content.append(account_result)
 
-	if balance_changed:
+	notification_title, notification_content = select_notification_content(
+		failure_notification_content, reward_notification_content
+	)
+	need_notify = bool(notification_content)
+
+	if failure_notification_content:
+		print('[NOTIFY] Check-in failure detected, sending a separate failure alert')
+	elif balance_changed:
 		print('[NOTIFY] Check-in increased balance, will send notification')
-	elif need_notify:
-		print('[NOTIFY] Check-in failure detected, will send notification')
 	else:
 		print('[INFO] Check-in did not increase balance, notification skipped')
 
@@ -650,12 +662,12 @@ async def main():
 			notify_content += f'\n\n{screenshot_hint}'
 
 		print(notify_content)
-		notify.push_message('AnyRouter Check-in Alert', notify_content, msg_type='text')
-		print('[NOTIFY] Notification sent because check-in increased balance or failed')
+		notify.push_message(notification_title, notify_content, msg_type='text')
+		print(f'[NOTIFY] {notification_title} sent')
 	else:
 		print('[INFO] No check-in balance increase or failure detected, notification skipped')
 
-	sys.exit(0 if success_count > 0 else 1)
+	sys.exit(0 if success_count == total_count else 1)
 
 
 def run_main():

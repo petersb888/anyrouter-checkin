@@ -4,7 +4,12 @@ from pathlib import Path
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
-from checkin import generate_balance_hash, should_notify_check_in_failure, should_notify_check_in_reward
+from checkin import (
+	generate_balance_hash,
+	select_notification_content,
+	should_notify_check_in_failure,
+	should_notify_check_in_reward,
+)
 
 
 def test_balance_hash_changes_when_quota_changes():
@@ -52,3 +57,17 @@ def test_check_in_failure_notifies():
 
 def test_successful_check_in_does_not_notify_as_failure():
 	assert should_notify_check_in_failure(True) is False
+
+
+def test_failure_notification_takes_priority_over_reward_notification():
+	title, content = select_notification_content(['[FAIL] AnyRouter HTTP 403'], ['[SUCCESS] 无名公益站 +$25'])
+
+	assert title == 'AnyRouter 签到失败告警'
+	assert content == ['[FAIL] AnyRouter HTTP 403']
+
+
+def test_reward_notification_is_selected_without_failures():
+	title, content = select_notification_content([], ['[SUCCESS] 无名公益站 +$25'])
+
+	assert title == 'AnyRouter 签到奖励通知'
+	assert content == ['[SUCCESS] 无名公益站 +$25']
