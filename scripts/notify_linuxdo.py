@@ -3,9 +3,9 @@
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import sys
-from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 
 
@@ -16,11 +16,14 @@ def server_push_url(server_push_key: str) -> str:
 
 
 def send_notification(server_push_key: str, title: str, content: str) -> None:
-    payload = urlencode({"title": title, "desp": content}).encode("utf-8")
+    payload = json.dumps({"title": title, "desp": content}).encode("utf-8")
     request = Request(
         server_push_url(server_push_key),
         data=payload,
-        headers={"Content-Type": "application/x-www-form-urlencoded"},
+        headers={
+            "Content-Type": "application/json",
+            "User-Agent": "anyrouter-checkin-linuxdo-notifier/1.0",
+        },
         method="POST",
     )
     with urlopen(request, timeout=20) as response:
