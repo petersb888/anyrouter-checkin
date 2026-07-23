@@ -91,3 +91,12 @@ jobs:
       - name: 停止代理
         if: always()
         run: bash scripts/stop_mihomo_proxy.sh
+
+      - name: 推送 LinuxDO 成功通知
+        if: success()
+        env:
+          SERVERPUSHKEY: ${{ secrets.SERVERPUSHKEY }}
+        run: |
+          python scripts/notify_linuxdo.py \
+            --title "LinuxDO 活跃任务成功" \
+            --content "浏览任务完成。运行记录：https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
