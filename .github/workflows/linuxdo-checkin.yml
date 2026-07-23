@@ -2,6 +2,12 @@ name: LinuxDO 活跃任务
 
 on:
   workflow_dispatch:
+    inputs:
+      notification_test:
+        description: 仅验证成功推送，不访问 LinuxDO
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   contents: read
@@ -21,6 +27,7 @@ jobs:
       LINUXDO_COOKIES: ${{ secrets.LINUXDO_COOKIES }}
     steps:
       - name: 校验 LinuxDO Cookie 配置
+        if: inputs.notification_test != true
         run: |
           if [ -z "$LINUXDO_COOKIES" ]; then
             echo "GitHub production Environment Secret LINUXDO_COOKIES 未配置。" >&2
@@ -33,6 +40,7 @@ jobs:
           persist-credentials: false
 
       - name: 检出固定版本的 LinuxDO 签到实现
+        if: inputs.notification_test != true
         uses: actions/checkout@v6
         with:
           repository: doveppp/linuxdo-checkin
@@ -41,6 +49,7 @@ jobs:
           persist-credentials: false
 
       - name: 安装 Chrome
+        if: inputs.notification_test != true
         uses: browser-actions/setup-chrome@v1
 
       - name: 配置 Python
@@ -49,6 +58,7 @@ jobs:
           python-version: "3.11"
 
       - name: 安装依赖
+        if: inputs.notification_test != true
         working-directory: linuxdo-checkin
         run: |
           python -m pip install --upgrade pip
@@ -63,6 +73,7 @@ jobs:
         run: bash scripts/setup_mihomo_proxy.sh
 
       - name: 将代理接入 LinuxDO 浏览器
+        if: inputs.notification_test != true
         working-directory: linuxdo-checkin
         run: |
           python - <<'PY'
@@ -99,6 +110,7 @@ jobs:
           PY
 
       - name: 执行 LinuxDO 活跃任务
+        if: inputs.notification_test != true
         working-directory: linuxdo-checkin
         run: |
           marker="$RUNNER_TEMP/linuxdo-success"
@@ -107,13 +119,22 @@ jobs:
           test -f "$marker"
 
       - name: 推送 LinuxDO 成功通知
-        if: success()
+        if: success() && inputs.notification_test != true
         env:
           SERVERPUSHKEY: ${{ secrets.SERVERPUSHKEY }}
         run: |
           HTTPS_PROXY="$CHECKIN_PROXY_URL" HTTP_PROXY="$CHECKIN_PROXY_URL" python scripts/notify_linuxdo.py \
             --title "LinuxDO 活跃任务成功" \
             --content "浏览任务完成。运行记录：https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+
+      - name: 验证 LinuxDO 推送通道
+        if: success() && inputs.notification_test == true
+        env:
+          SERVERPUSHKEY: ${{ secrets.SERVERPUSHKEY }}
+        run: |
+          HTTPS_PROXY="$CHECKIN_PROXY_URL" HTTP_PROXY="$CHECKIN_PROXY_URL" python scripts/notify_linuxdo.py \
+            --title "LinuxDO 推送通道验证" \
+            --content "推送通道可用。运行记录：https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
 
       - name: 停止代理
         if: always()
