@@ -1,0 +1,54 @@
+name: LinuxDO 活跃任务
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: linuxdo-checkin
+  cancel-in-progress: false
+
+jobs:
+  checkin:
+    runs-on: ubuntu-22.04
+    environment: production
+    env:
+      PYTHONIOENCODING: utf-8
+      PYTHONUNBUFFERED: "1"
+      BROWSE_ENABLED: "true"
+      LINUXDO_COOKIES: ${{ secrets.LINUXDO_COOKIES }}
+    steps:
+      - name: 校验 LinuxDO Cookie 配置
+        run: |
+          if [ -z "$LINUXDO_COOKIES" ]; then
+            echo "GitHub production Environment Secret LINUXDO_COOKIES 未配置。" >&2
+            exit 1
+          fi
+
+      - name: 检出固定版本的 LinuxDO 签到实现
+        uses: actions/checkout@v6
+        with:
+          repository: doveppp/linuxdo-checkin
+          ref: 2b72a108950b45fa75ffd18517dda6da4e8fd57b
+          path: linuxdo-checkin
+          persist-credentials: false
+
+      - name: 安装 Chrome
+        uses: browser-actions/setup-chrome@v1
+
+      - name: 配置 Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+
+      - name: 安装依赖
+        working-directory: linuxdo-checkin
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+
+      - name: 执行 LinuxDO 活跃任务
+        working-directory: linuxdo-checkin
+        run: python main.py
