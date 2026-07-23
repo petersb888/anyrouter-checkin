@@ -81,12 +81,30 @@ jobs:
           )
           if needle not in source:
               raise SystemExit("LinuxDO 上游源码结构已变化，无法注入代理配置")
-          path.write_text(source.replace(needle, replacement, 1), encoding="utf-8")
+          source = source.replace(needle, replacement, 1)
+
+          completion = "            self.send_notifications(BROWSE_ENABLED)  # 发送通知"
+          completion_replacement = "\n".join(
+              [
+                  "            self.send_notifications(BROWSE_ENABLED)  # 发送通知",
+                  "            success_marker = os.environ.get(\"LINUXDO_SUCCESS_MARKER\", \"\").strip()",
+                  "            if success_marker:",
+                  "                with open(success_marker, \"w\", encoding=\"utf-8\") as marker_file:",
+                  "                    marker_file.write(\"completed\\n\")",
+              ]
+          )
+          if completion not in source:
+              raise SystemExit("LinuxDO 上游源码结构已变化，无法注入完成标记")
+          path.write_text(source.replace(completion, completion_replacement, 1), encoding="utf-8")
           PY
 
       - name: 执行 LinuxDO 活跃任务
         working-directory: linuxdo-checkin
-        run: python main.py
+        run: |
+          marker="$RUNNER_TEMP/linuxdo-success"
+          rm -f "$marker"
+          LINUXDO_SUCCESS_MARKER="$marker" python main.py
+          test -f "$marker"
 
       - name: 推送 LinuxDO 成功通知
         if: success()
