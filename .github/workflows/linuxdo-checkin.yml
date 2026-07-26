@@ -67,9 +67,11 @@ jobs:
       - name: 配置可选代理
         env:
           PROXY_SUBSCRIPTION_URL: ${{ secrets.PROXY_SUBSCRIPTION_URL }}
-          PROXY_TEST_URL: https://www.google.com/generate_204
+          # 此订阅节点名唯一匹配；避免按 Google 延迟自动切到 LinuxDO 不接受的出口。
+          PROXY_NODE_FILTER: ^加拿大AI$
+          PROXY_TEST_URL: https://linux.do
           MIHOMO_VERSION: v1.19.27
-          PROXY_REQUIRED: false
+          PROXY_REQUIRED: true
         run: bash scripts/setup_mihomo_proxy.sh
 
       - name: 将代理接入 LinuxDO 浏览器

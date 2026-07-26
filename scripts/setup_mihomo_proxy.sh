@@ -5,6 +5,7 @@
 #   PROXY_TEST_URL          探测目标，默认 https://www.google.com/generate_204
 #   PROXY_REQUIRED          true 时探测失败则退出 1
 #   PROXY_PORT              本地 mixed-port，默认 7890
+#   PROXY_NODE_FILTER       指定节点名称的正则；设置后仅使用匹配节点，不再按延迟自动切换
 
 set -euo pipefail
 
@@ -18,6 +19,12 @@ PROXY_PORT="${PROXY_PORT:-7890}"
 PROXY_TEST_URL="${PROXY_TEST_URL:-https://www.google.com/generate_204}"
 MIHOMO_VERSION="${MIHOMO_VERSION:-v1.19.0}"
 PROXY_REQUIRED="${PROXY_REQUIRED:-false}"
+PROXY_NODE_FILTER="${PROXY_NODE_FILTER:-}"
+
+if [[ "${PROXY_NODE_FILTER}" == *$'\n'* || "${PROXY_NODE_FILTER}" == *$'\r'* ]]; then
+	echo "[FAILED] PROXY_NODE_FILTER must be a single-line regular expression" >&2
+	exit 1
+fi
 
 mkdir -p "${PROXY_DIR}"
 cd "${PROXY_DIR}"
@@ -35,6 +42,26 @@ fi
 gunzip -f "${ARCHIVE}"
 chmod +x "mihomo-linux-amd64-${MIHOMO_VERSION}"
 MIHOMO_BIN="${PROXY_DIR}/mihomo-linux-amd64-${MIHOMO_VERSION}"
+
+if [[ -n "${PROXY_NODE_FILTER}" ]]; then
+	# select 只保留匹配节点；当过滤条件唯一时，Mihomo 不会在其它订阅节点间切换。
+	CHECKIN_GROUP_TYPE="select"
+	CHECKIN_GROUP_OPTIONS=$(cat <<EOF
+    filter: "${PROXY_NODE_FILTER}"
+EOF
+)
+	echo "[INFO] CHECKIN proxy is pinned by node filter"
+else
+	CHECKIN_GROUP_TYPE="url-test"
+	CHECKIN_GROUP_OPTIONS=$(cat <<EOF
+    url: "${PROXY_TEST_URL}"
+    interval: 300
+    tolerance: 150
+    lazy: false
+EOF
+)
+	echo "[INFO] CHECKIN proxy uses automatic url-test selection"
+fi
 
 cat > config.yaml <<EOF
 mixed-port: ${PROXY_PORT}
@@ -57,11 +84,8 @@ proxy-providers:
 
 proxy-groups:
   - name: CHECKIN
-    type: url-test
-    url: "${PROXY_TEST_URL}"
-    interval: 300
-    tolerance: 150
-    lazy: false
+    type: ${CHECKIN_GROUP_TYPE}
+${CHECKIN_GROUP_OPTIONS}
     use:
       - subscription
 
