@@ -3,6 +3,7 @@ from pathlib import Path
 import pytest
 
 from scripts.patch_linuxdo_runtime import (
+    AUTH_TEST_NEEDLE,
     COMPLETION_NEEDLE,
     COOKIE_FALLBACK_NEEDLE,
     COOKIE_VALIDATION_NEEDLE,
@@ -22,6 +23,7 @@ def make_source() -> str:
             COOKIE_VALIDATION_NEEDLE,
             COOKIE_FALLBACK_NEEDLE,
             LOGIN_FAILURE_NEEDLE,
+            AUTH_TEST_NEEDLE,
             COMPLETION_NEEDLE,
         ]
     )
@@ -35,6 +37,7 @@ def test_patch_source_connects_all_runtime_guards() -> None:
     assert "/session/current.json" in patched
     assert "home_html_size=" in patched
     assert "停止任务以避免额外登录请求" in patched
+    assert "LinuxDO Cookie 认证测试通过" in patched
     assert "success_marker" in patched
 
 

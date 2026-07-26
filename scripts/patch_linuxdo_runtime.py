@@ -113,6 +113,22 @@ LOGIN_FAILURE_REPLACEMENT = """            if not login_res:  # 登录
                 logger.error("登录验证失败，停止任务")
                 return"""
 
+AUTH_TEST_NEEDLE = "            if BROWSE_ENABLED:\n"
+AUTH_TEST_REPLACEMENT = """            auth_test_only = os.environ.get(
+                "LINUXDO_AUTH_TEST_ONLY", "false"
+            ).strip().lower() in {"true", "1", "on"}
+            if auth_test_only:
+                success_marker = os.environ.get("LINUXDO_SUCCESS_MARKER", "").strip()
+                if not success_marker:
+                    raise RuntimeError("认证测试缺少 LINUXDO_SUCCESS_MARKER")
+                with open(success_marker, "w", encoding="utf-8") as marker_file:
+                    marker_file.write("authenticated\\n")
+                logger.success("LinuxDO Cookie 认证测试通过")
+                return
+
+            if BROWSE_ENABLED:
+"""
+
 COMPLETION_NEEDLE = "            self.send_notifications(BROWSE_ENABLED)  # 发送通知"
 COMPLETION_REPLACEMENT = "\n".join(
     [
@@ -153,6 +169,7 @@ def patch_source(source: str) -> str:
         LOGIN_FAILURE_REPLACEMENT,
         "登录失败保护",
     )
+    source = _replace_once(source, AUTH_TEST_NEEDLE, AUTH_TEST_REPLACEMENT, "认证测试入口")
     return _replace_once(source, COMPLETION_NEEDLE, COMPLETION_REPLACEMENT, "完成标记")
 
 

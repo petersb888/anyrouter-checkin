@@ -8,6 +8,11 @@ on:
         required: false
         default: false
         type: boolean
+      auth_test_only:
+        description: 仅验证 Cookie 登录，不执行浏览任务
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   contents: read
@@ -82,6 +87,8 @@ jobs:
       - name: 执行 LinuxDO 活跃任务
         if: inputs.notification_test != true
         working-directory: linuxdo-checkin
+        env:
+          LINUXDO_AUTH_TEST_ONLY: ${{ inputs.auth_test_only }}
         run: |
           marker="$RUNNER_TEMP/linuxdo-success"
           rm -f "$marker"
@@ -94,8 +101,8 @@ jobs:
           SERVERPUSHKEY: ${{ secrets.SERVERPUSHKEY }}
         run: |
           HTTPS_PROXY="$CHECKIN_PROXY_URL" HTTP_PROXY="$CHECKIN_PROXY_URL" python scripts/notify_linuxdo.py \
-            --title "LinuxDO 活跃任务成功" \
-            --content "浏览任务完成。运行记录：https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+            --title "${{ inputs.auth_test_only == true && 'LinuxDO Cookie 验证成功' || 'LinuxDO 活跃任务成功' }}" \
+            --content "${{ inputs.auth_test_only == true && 'Cookie 登录验证通过。' || '浏览任务完成。' }}运行记录：https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
 
       - name: 推送 LinuxDO 失败通知
         if: failure() && inputs.notification_test != true
