@@ -6,6 +6,7 @@
 #   PROXY_REQUIRED          true 时探测失败则退出 1
 #   PROXY_PORT              本地 mixed-port，默认 7890
 #   PROXY_NODE_FILTER       指定节点名称的正则；设置后仅使用匹配节点，不再按延迟自动切换
+#   PROXY_HEALTH_ATTEMPTS   健康检查最大次数，默认 45；4xx/5xx 会立即停止
 
 set -euo pipefail
 
@@ -20,9 +21,14 @@ PROXY_TEST_URL="${PROXY_TEST_URL:-https://www.google.com/generate_204}"
 MIHOMO_VERSION="${MIHOMO_VERSION:-v1.19.0}"
 PROXY_REQUIRED="${PROXY_REQUIRED:-false}"
 PROXY_NODE_FILTER="${PROXY_NODE_FILTER:-}"
+PROXY_HEALTH_ATTEMPTS="${PROXY_HEALTH_ATTEMPTS:-45}"
 
 if [[ "${PROXY_NODE_FILTER}" == *$'\n'* || "${PROXY_NODE_FILTER}" == *$'\r'* ]]; then
 	echo "[FAILED] PROXY_NODE_FILTER must be a single-line regular expression" >&2
+	exit 1
+fi
+if ! [[ "${PROXY_HEALTH_ATTEMPTS}" =~ ^[1-9][0-9]*$ ]]; then
+	echo "[FAILED] PROXY_HEALTH_ATTEMPTS must be a positive integer" >&2
 	exit 1
 fi
 
@@ -133,17 +139,30 @@ fi
 
 PROXY_URL="http://127.0.0.1:${PROXY_PORT}"
 READY=false
-for attempt in $(seq 1 45); do
-	if curl -fsS -x "${PROXY_URL}" --max-time 20 "${PROXY_TEST_URL}" -o /dev/null 2>/dev/null; then
+LAST_HTTP_STATUS="000"
+LAST_CURL_STATUS=0
+for attempt in $(seq 1 "${PROXY_HEALTH_ATTEMPTS}"); do
+	if HTTP_STATUS=$(curl -sS -x "${PROXY_URL}" --max-time 20 --output /dev/null --write-out '%{http_code}' "${PROXY_TEST_URL}"); then
+		LAST_CURL_STATUS=0
+	else
+		LAST_CURL_STATUS=$?
+	fi
+	LAST_HTTP_STATUS="${HTTP_STATUS:-000}"
+	if [[ "${LAST_CURL_STATUS}" == "0" && "${LAST_HTTP_STATUS}" =~ ^[1-5][0-9][0-9]$ ]] && \
+		(( 10#${LAST_HTTP_STATUS} >= 200 && 10#${LAST_HTTP_STATUS} < 400 )); then
 		READY=true
 		break
 	fi
-	echo "[INFO] Waiting for proxy health check (${attempt}/45)..."
+	if [[ "${LAST_HTTP_STATUS}" =~ ^[1-5][0-9][0-9]$ && "${LAST_HTTP_STATUS}" != "000" ]]; then
+		echo "[FAILED] Proxy target returned HTTP ${LAST_HTTP_STATUS}; stop retrying to avoid repeated requests"
+		break
+	fi
+	echo "[INFO] Waiting for proxy health check (${attempt}/${PROXY_HEALTH_ATTEMPTS}, curl=${LAST_CURL_STATUS}, http=${LAST_HTTP_STATUS})..."
 	sleep 2
 done
 
 if [[ "${READY}" != "true" ]]; then
-	echo "[FAILED] Proxy health check failed for ${PROXY_TEST_URL}"
+	echo "[FAILED] Proxy health check failed for ${PROXY_TEST_URL} (curl=${LAST_CURL_STATUS}, http=${LAST_HTTP_STATUS})"
 	tail -n 30 mihomo.log || true
 	if [[ -f mihomo.pid ]]; then
 		kill "$(cat mihomo.pid)" 2>/dev/null || true
