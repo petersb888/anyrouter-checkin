@@ -70,6 +70,8 @@ ipv6: false
 mode: rule
 log-level: warning
 unified-delay: true
+# 仅供本 Runner 校验已选节点；不暴露到外网。
+external-controller: 127.0.0.1:9090
 
 proxy-providers:
   subscription:
@@ -96,6 +98,38 @@ EOF
 echo "[INFO] Starting mihomo on 127.0.0.1:${PROXY_PORT}..."
 nohup "${MIHOMO_BIN}" -d "${PROXY_DIR}" -f config.yaml > mihomo.log 2>&1 &
 echo $! > mihomo.pid
+
+if [[ -n "${PROXY_NODE_FILTER}" ]]; then
+	# select 组默认可能尚未选定成员。通过仅监听本机的 Controller 确认候选唯一，
+	# 再显式选中该节点，避免悄悄回退到订阅中的其它出口。
+	PINNED_NODE=""
+	for attempt in $(seq 1 20); do
+		mapfile -t GROUP_STATE < <(
+			curl -fsS --max-time 3 "http://127.0.0.1:9090/proxies/CHECKIN" 2>/dev/null |
+				python -c 'import json, sys; data = json.load(sys.stdin); nodes = data.get("all", []); print(len(nodes)); print(data.get("now", "")); print(nodes[0] if len(nodes) == 1 else "")' 2>/dev/null || true
+		)
+		NODE_COUNT="${GROUP_STATE[0]:-0}"
+		CURRENT_NODE="${GROUP_STATE[1]:-}"
+		CANDIDATE_NODE="${GROUP_STATE[2]:-}"
+		if [[ "${NODE_COUNT}" == "1" && -n "${CANDIDATE_NODE}" ]]; then
+			if [[ "${CURRENT_NODE}" != "${CANDIDATE_NODE}" ]]; then
+				NODE_PAYLOAD=$(python -c 'import json, sys; print(json.dumps({"name": sys.argv[1]}))' "${CANDIDATE_NODE}")
+				curl -fsS --max-time 3 -X PUT "http://127.0.0.1:9090/proxies/CHECKIN" \
+					-H 'Content-Type: application/json' -d "${NODE_PAYLOAD}" -o /dev/null
+			fi
+			PINNED_NODE="${CANDIDATE_NODE}"
+			break
+		fi
+		sleep 1
+	done
+	if [[ -z "${PINNED_NODE}" ]]; then
+		echo "[FAILED] No unique subscription node matches PROXY_NODE_FILTER (expected exactly 1, got ${NODE_COUNT:-0})" >&2
+		tail -n 30 mihomo.log || true
+		kill "$(cat mihomo.pid)" 2>/dev/null || true
+		exit 1
+	fi
+	echo "[SUCCESS] CHECKIN proxy pinned to the verified subscription node"
+fi
 
 PROXY_URL="http://127.0.0.1:${PROXY_PORT}"
 READY=false
