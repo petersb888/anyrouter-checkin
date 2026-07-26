@@ -6,7 +6,7 @@
 #   PROXY_REQUIRED          true 时探测失败则退出 1
 #   PROXY_PORT              本地 mixed-port，默认 7890
 #   PROXY_NODE_FILTER       指定节点名称的正则；设置后仅使用匹配节点，不再按延迟自动切换
-#   PROXY_HEALTH_ATTEMPTS   健康检查最大次数，默认 45；4xx/5xx 会立即停止
+#   PROXY_HEALTH_ATTEMPTS   网络健康检查最大次数，默认 45
 
 set -euo pipefail
 
@@ -148,13 +148,11 @@ for attempt in $(seq 1 "${PROXY_HEALTH_ATTEMPTS}"); do
 		LAST_CURL_STATUS=$?
 	fi
 	LAST_HTTP_STATUS="${HTTP_STATUS:-000}"
-	if [[ "${LAST_CURL_STATUS}" == "0" && "${LAST_HTTP_STATUS}" =~ ^[1-5][0-9][0-9]$ ]] && \
-		(( 10#${LAST_HTTP_STATUS} >= 200 && 10#${LAST_HTTP_STATUS} < 400 )); then
+	if [[ "${LAST_CURL_STATUS}" == "0" && "${LAST_HTTP_STATUS}" =~ ^[1-5][0-9][0-9]$ ]]; then
+		if (( 10#${LAST_HTTP_STATUS} >= 400 )); then
+			echo "[WARN] Proxy reached target with HTTP ${LAST_HTTP_STATUS}; browser will handle WAF/authentication"
+		fi
 		READY=true
-		break
-	fi
-	if [[ "${LAST_HTTP_STATUS}" =~ ^[1-5][0-9][0-9]$ && "${LAST_HTTP_STATUS}" != "000" ]]; then
-		echo "[FAILED] Proxy target returned HTTP ${LAST_HTTP_STATUS}; stop retrying to avoid repeated requests"
 		break
 	fi
 	echo "[INFO] Waiting for proxy health check (${attempt}/${PROXY_HEALTH_ATTEMPTS}, curl=${LAST_CURL_STATUS}, http=${LAST_HTTP_STATUS})..."
