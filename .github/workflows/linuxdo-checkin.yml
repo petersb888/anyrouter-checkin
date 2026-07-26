@@ -165,6 +165,16 @@ jobs:
             --title "LinuxDO 活跃任务成功" \
             --content "浏览任务完成。运行记录：https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
 
+      - name: 推送 LinuxDO 失败通知
+        if: failure() && inputs.notification_test != true
+        continue-on-error: true
+        env:
+          SERVERPUSHKEY: ${{ secrets.SERVERPUSHKEY }}
+        run: |
+          python scripts/notify_linuxdo.py \
+            --title "LinuxDO 活跃任务失败告警" \
+            --content "任务未完成。运行记录：https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+
       - name: 验证 LinuxDO 推送通道
         if: success() && inputs.notification_test == true
         env:
