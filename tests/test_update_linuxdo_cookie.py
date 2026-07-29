@@ -4,11 +4,61 @@ import subprocess
 import pytest
 
 from scripts.update_linuxdo_cookie import (
+    AnyRouterUpdate,
     CookieFormatError,
     CookieUpdate,
+    build_anyrouter_update,
     build_cookie_update,
     set_github_secret,
 )
+
+ANYROUTER_SESSION = "session-value"
+
+
+def test_build_anyrouter_update_keeps_session_and_drops_runner_bound_waf_cookies() -> None:
+    raw = json.dumps(
+        [
+            {"domain": ".anyrouter.top", "name": "session", "value": ANYROUTER_SESSION},
+            {"domain": ".anyrouter.top", "name": "acw_tc", "value": "old-acw"},
+            {"domain": ".anyrouter.top", "name": "cdn_sec_tc", "value": "old-cdn"},
+            {"domain": ".anyrouter.top", "name": "acw_sc__v2", "value": "old-sc"},
+            {"domain": ".anyrouter.top", "name": "cf_clearance", "value": "cf"},
+            {"domain": "example.com", "name": "session", "value": "wrong-domain"},
+        ]
+    )
+
+    update = build_anyrouter_update(raw, "79296")
+
+    assert isinstance(update, AnyRouterUpdate)
+    assert json.loads(update.secret_value) == [
+        {"name": "AnyRouter", "cookies": {"session": ANYROUTER_SESSION}, "api_user": "79296"}
+    ]
+    assert update.cookie_names == ("session",)
+    assert update.input_count == 6
+    assert update.ignored_names == ("acw_sc__v2", "acw_tc", "cdn_sec_tc", "cf_clearance")
+
+
+def test_build_anyrouter_update_accepts_cookie_header() -> None:
+    update = build_anyrouter_update(
+        "acw_tc=old; session=session-value; cdn_sec_tc=old2", "79296"
+    )
+
+    assert json.loads(update.secret_value)[0]["cookies"] == {"session": "session-value"}
+    assert set(update.ignored_names) == {"acw_tc", "cdn_sec_tc"}
+
+
+@pytest.mark.parametrize(
+    "raw, api_user, message",
+    [
+        ('[{"name":"session","value":"x"}]', "", "New-Api-User"),
+        ('[{"name":"session","value":"x"}]', "-1", "New-Api-User"),
+        ('[{"name":"other","value":"x"}]', "79296", "缺少 session"),
+        ('[{"name":"session","value":""}]', "79296", "缺少 session"),
+    ],
+)
+def test_build_anyrouter_update_rejects_invalid_input(raw: str, api_user: str, message: str) -> None:
+    with pytest.raises(CookieFormatError, match=message):
+        build_anyrouter_update(raw, api_user)
 
 
 def test_build_cookie_update_keeps_only_linuxdo_session_cookies() -> None:

@@ -1,9 +1,11 @@
-"""Update the GitHub Environment Secret used by the LinuxDO workflow.
+"""Update GitHub Environment Secrets used by the check-in workflows.
 
 The input format is the JSON exported by the Cookie-Editor browser extension.
-Only the Discourse session cookies required by the workflow are uploaded:
-``_t`` and ``_forum_session``.  WAF/browser-bound cookies such as
-``cf_clearance`` are deliberately ignored.
+For LinuxDO, only the Discourse session cookies required by the workflow are
+uploaded: ``_t`` and ``_forum_session``.  For AnyRouter, the Cookie Editor
+export is converted to the ``ANYROUTER_ACCOUNTS`` JSON expected by the
+workflow, and the ``New-Api-User`` value must be supplied from a logged-in
+request (the session cookie alone is not sufficient for that API).
 
 Run on Windows with:
 
@@ -32,7 +34,9 @@ DEFAULT_REPOSITORY = os.environ.get(
 DEFAULT_ENVIRONMENT = os.environ.get("GITHUB_ENVIRONMENT", "production")
 DEFAULT_SECRET_NAME = "LINUXDO_COOKIES"
 DEFAULT_WORKFLOW = "linuxdo-checkin.yml"
+DEFAULT_TARGET = "linuxdo"
 REQUIRED_COOKIE_NAMES = ("_t", "_forum_session")
+ANYROUTER_WAF_COOKIE_NAMES = ("acw_tc", "cdn_sec_tc", "acw_sc__v2")
 IGNORED_WAF_COOKIE_NAMES = {
     "cf_clearance",
     "__cf_bm",
@@ -55,6 +59,17 @@ class CookieUpdate:
     names: tuple[str, ...]
     input_count: int
     ignored_names: tuple[str, ...]
+
+
+@dataclass(frozen=True)
+class AnyRouterUpdate:
+    """The sanitized AnyRouter account payload and metadata."""
+
+    secret_value: str
+    cookie_names: tuple[str, ...]
+    input_count: int
+    ignored_names: tuple[str, ...]
+    api_user: str
 
 
 def _load_json(value: str) -> Any:
@@ -172,6 +187,119 @@ def build_cookie_update(raw_json: str) -> CookieUpdate:
     )
 
 
+def _parse_cookie_header(raw_header: str) -> dict[str, str]:
+    """Parse a ``name=value; name2=value2`` Cookie header."""
+
+    result: dict[str, str] = {}
+    for part in raw_header.split(";"):
+        item = part.strip()
+        if not item:
+            continue
+        if "=" not in item:
+            raise CookieFormatError(f"Cookie header 条目缺少 '='：{item[:30]!r}")
+        name, value = item.split("=", 1)
+        name = name.strip()
+        value = value.strip()
+        if not name or not value:
+            raise CookieFormatError("Cookie header 存在空的名称或 value。")
+        if any(char in name for char in "\r\n") or any(char in value for char in "\r\n"):
+            raise CookieFormatError("Cookie header 包含非法换行符。")
+        result[name] = value
+    if not result:
+        raise CookieFormatError("Cookie header 为空。")
+    return result
+
+
+def build_anyrouter_update(raw_input: str, api_user: str) -> AnyRouterUpdate:
+    """Build the ``ANYROUTER_ACCOUNTS`` JSON from Editor JSON or a Cookie header.
+
+    AnyRouter requires ``New-Api-User`` in addition to the session cookie.
+    ``api_user`` is deliberately mandatory and is never guessed from a cookie,
+    because a stale or guessed ID produces a misleading HTTP 401.
+    """
+
+    api_user = api_user.strip()
+    if not api_user.isdigit() or int(api_user) <= 0:
+        raise CookieFormatError(
+            "AnyRouter 的 New-Api-User 必须是登录请求中的正整数 ID；"
+            "请从 Network 请求头复制，不能填用户名。"
+        )
+
+    text = raw_input.strip()
+    if not text:
+        raise CookieFormatError("输入为空，请粘贴 Cookie-Editor JSON 或 Cookie header。")
+
+    try:
+        data = _load_json(text)
+    except CookieFormatError:
+        data = None
+
+    items: list[dict[str, Any]] | None = None
+    if data is not None:
+        try:
+            items = _cookie_items(data)
+        except CookieFormatError:
+            items = None
+
+    cookies: dict[str, str]
+    input_count: int
+    if items is not None:
+        cookies = {}
+        ignored_names: set[str] = set()
+        for item in items:
+            name = str(item.get("name", "") or "").strip()
+            if not name:
+                continue
+            value = item.get("value")
+            if value is None or str(value) == "":
+                continue
+            # AnyRouter cookies are host-only/root cookies in normal exports;
+            # accept absent domains and anyrouter.top subdomains, but ignore
+            # unrelated domains when the browser exported multiple sites.
+            domain = str(item.get("domain", "") or "").strip().lower().lstrip(".")
+            if domain and domain != "anyrouter.top" and not domain.endswith(".anyrouter.top"):
+                continue
+            if name in cookies and name not in ANYROUTER_WAF_COOKIE_NAMES:
+                continue
+            cookies[name] = _normalise_cookie_value(value, name)
+            if name in {"cf_clearance", "__cf_bm"}:
+                ignored_names.add(name)
+        input_count = len(items)
+    else:
+        cookies = _parse_cookie_header(text)
+        ignored_names = {
+            name for name in cookies if name in {"cf_clearance", "__cf_bm"}
+        }
+        input_count = len(cookies)
+
+    if "session" not in cookies:
+        raise CookieFormatError(
+            "AnyRouter Cookie 中缺少 session；请在 anyrouter.top 登录后重新导出。"
+        )
+
+    # WAF cookies are bound to the browser/IP that obtained them.  The
+    # workflow deliberately obtains fresh values on the runner, so storing
+    # these input values would make a later run fail with a stale/foreign WAF
+    # challenge.  Keep only the durable authentication cookie in the secret.
+    for name in ANYROUTER_WAF_COOKIE_NAMES:
+        if name in cookies:
+            ignored_names.add(name)
+    ordered_names = ("session",)
+    cookie_payload = {name: cookies[name] for name in ordered_names}
+    secret_value = json.dumps(
+        [{"name": "AnyRouter", "cookies": cookie_payload, "api_user": api_user}],
+        ensure_ascii=False,
+        separators=(",", ":"),
+    )
+    return AnyRouterUpdate(
+        secret_value=secret_value,
+        cookie_names=ordered_names,
+        input_count=input_count,
+        ignored_names=tuple(sorted(ignored_names)),
+        api_user=api_user,
+    )
+
+
 def redact(text: str, secrets: Iterable[str]) -> str:
     """Remove cookie values from command output before it reaches the GUI."""
 
@@ -209,7 +337,7 @@ def run_gh(
 
 
 def set_github_secret(
-    update: CookieUpdate,
+    update: CookieUpdate | AnyRouterUpdate,
     *,
     repository: str,
     environment: str,
@@ -226,7 +354,8 @@ def set_github_secret(
         "--env",
         environment,
     )
-    return run_gh(args, stdin=update.header)
+    value = update.header if isinstance(update, CookieUpdate) else update.secret_value
+    return run_gh(args, stdin=value)
 
 
 def trigger_auth_test(
@@ -253,6 +382,28 @@ def trigger_auth_test(
     )
 
 
+def trigger_anyrouter_checkin(
+    *,
+    repository: str,
+    workflow: str = "checkin.yml",
+) -> subprocess.CompletedProcess[str]:
+    """Trigger the normal AnyRouter workflow after replacing its secret."""
+
+    return run_gh(
+        gh_command(
+            "workflow",
+            "run",
+            workflow,
+            "--repo",
+            repository,
+            "--ref",
+            "main",
+            "-f",
+            "debug=false",
+        )
+    )
+
+
 def _read_text_file(path: Path) -> str:
     return path.read_text(encoding="utf-8-sig")
 
@@ -268,19 +419,22 @@ class CookieUpdaterApp:
         environment: str = DEFAULT_ENVIRONMENT,
         secret_name: str = DEFAULT_SECRET_NAME,
         workflow: str = DEFAULT_WORKFLOW,
+        target: str = DEFAULT_TARGET,
     ) -> None:
         self.root = root
-        self.root.title("LinuxDO Cookie 一键更新")
-        self.root.geometry("900x690")
+        self.root.title("签到 Cookie 一键更新")
+        self.root.geometry("940x730")
         self.root.minsize(760, 560)
 
         self.repository = StringVar(value=repository)
         self.environment = StringVar(value=environment)
         self.secret_name = StringVar(value=secret_name)
         self.workflow = StringVar(value=workflow)
+        self.target = StringVar(value=target)
+        self.api_user = StringVar()
         self.status = StringVar(value="请粘贴 Cookie-Editor JSON，或点击“读取剪贴板”。")
 
-        self._last_update: CookieUpdate | None = None
+        self._last_update: CookieUpdate | AnyRouterUpdate | None = None
         self._busy = False
         self._build_widgets()
 
@@ -290,16 +444,30 @@ class CookieUpdaterApp:
 
         config = ttk.LabelFrame(outer, text="GitHub 目标", padding=8)
         config.pack(fill="x", pady=(0, 8))
-        self._add_entry(config, "仓库", self.repository, row=0, column=0)
-        self._add_entry(config, "Environment", self.environment, row=0, column=2)
-        self._add_entry(config, "Secret 名称", self.secret_name, row=1, column=0)
-        self._add_entry(config, "验证工作流", self.workflow, row=1, column=2)
+        ttk.Label(config, text="更新目标").grid(row=0, column=0, padx=(0, 4), pady=2, sticky="w")
+        target_box = ttk.Combobox(
+            config,
+            textvariable=self.target,
+            values=("linuxdo", "anyrouter"),
+            state="readonly",
+            width=22,
+        )
+        target_box.grid(row=0, column=1, padx=(0, 12), pady=2, sticky="ew")
+        target_box.bind("<<ComboboxSelected>>", lambda _event: self._target_changed())
+        self._add_entry(config, "仓库", self.repository, row=0, column=2)
+        self._add_entry(config, "Environment", self.environment, row=1, column=0)
+        self._add_entry(config, "Secret 名称", self.secret_name, row=1, column=2)
+        self._add_entry(config, "验证工作流", self.workflow, row=2, column=0)
+        self.api_user_entry = self._add_entry(
+            config, "New-Api-User", self.api_user, row=2, column=2
+        )
 
         hint = ttk.Label(
             outer,
             text=(
-                "Cookie Editor 导出格式应为 JSON 数组。脚本只上传 _t 和 _forum_session，"
-                "会自动忽略 cf_clearance 等绑定本地浏览器/IP 的 WAF Cookie。"
+                "LinuxDO 只上传 _t 和 _forum_session；AnyRouter 只上传 session"
+                "及账号 JSON。运行时会自动获取新的 WAF Cookie；还必须填写已登录"
+                "请求中的 New-Api-User。"
             ),
             wraplength=850,
             justify="left",
@@ -341,6 +509,18 @@ class CookieUpdaterApp:
         ttk.Separator(outer).pack(fill="x", pady=(10, 6))
         ttk.Label(outer, textvariable=self.status, wraplength=850, justify="left").pack(fill="x")
 
+        self._target_changed()
+
+    def _target_changed(self) -> None:
+        if self.target.get() == "anyrouter":
+            self.secret_name.set("ANYROUTER_ACCOUNTS")
+            self.workflow.set("checkin.yml")
+            self.api_user_entry.configure(state=NORMAL)
+        else:
+            self.secret_name.set("LINUXDO_COOKIES")
+            self.workflow.set(DEFAULT_WORKFLOW)
+            self.api_user_entry.configure(state=DISABLED)
+
     @staticmethod
     def _add_entry(
         parent: ttk.Frame,
@@ -349,11 +529,12 @@ class CookieUpdaterApp:
         *,
         row: int,
         column: int,
-    ) -> None:
+    ) -> ttk.Entry:
         ttk.Label(parent, text=label).grid(row=row, column=column, padx=(0, 4), pady=2, sticky="w")
         entry = ttk.Entry(parent, textvariable=variable, width=25)
         entry.grid(row=row, column=column + 1, padx=(0, 12), pady=2, sticky="ew")
         parent.columnconfigure(column + 1, weight=1)
+        return entry
 
     def _set_preview(self, text: str) -> None:
         self.preview.configure(state=NORMAL)
@@ -399,9 +580,14 @@ class CookieUpdaterApp:
         self._last_update = None
         self.status.set("已清空。")
 
-    def preview_cookie(self, *, show_errors: bool = True) -> CookieUpdate | None:
+    def preview_cookie(
+        self, *, show_errors: bool = True
+    ) -> CookieUpdate | AnyRouterUpdate | None:
         try:
-            update = build_cookie_update(self._get_input())
+            if self.target.get() == "anyrouter":
+                update = build_anyrouter_update(self._get_input(), self.api_user.get())
+            else:
+                update = build_cookie_update(self._get_input())
         except CookieFormatError as exc:
             self._last_update = None
             self._set_preview("")
@@ -412,15 +598,22 @@ class CookieUpdaterApp:
 
         self._last_update = update
         ignored = (
-            f"；已忽略 WAF Cookie：{', '.join(update.ignored_names)}"
+            f"；已忽略：{', '.join(update.ignored_names)}"
             if update.ignored_names
             else ""
         )
-        self._set_preview(
-            f"将上传 Cookie：{', '.join(update.names)}\n"
-            f"输入条目：{update.input_count}；上传条目：{len(update.names)}{ignored}\n"
-            "Cookie 值已隐藏，不会写入本地文件。"
-        )
+        if isinstance(update, AnyRouterUpdate):
+            self._set_preview(
+                f"目标：AnyRouter；New-Api-User：{update.api_user}\n"
+                f"输入条目：{update.input_count}；上传 Cookie：{', '.join(update.cookie_names)}{ignored}\n"
+                "将写入 ANYROUTER_ACCOUNTS；Cookie 值已隐藏，不会写入本地文件。"
+            )
+        else:
+            self._set_preview(
+                f"目标：LinuxDO；上传 Cookie：{', '.join(update.names)}\n"
+                f"输入条目：{update.input_count}；上传条目：{len(update.names)}{ignored}\n"
+                "Cookie 值已隐藏，不会写入本地文件。"
+            )
         self.status.set("Cookie 解析成功，可以更新 GitHub Secret。")
         return update
 
@@ -452,12 +645,17 @@ class CookieUpdaterApp:
             messagebox.showerror("配置不完整", "仓库、Environment、Secret 名称不能为空。", parent=self.root)
             return
 
-        action = "更新 Secret 并触发 Cookie 验证" if trigger else "更新 GitHub Environment Secret"
+        target_name = "AnyRouter" if isinstance(update, AnyRouterUpdate) else "LinuxDO"
+        action = f"更新 {target_name} Secret 并触发验证" if trigger else "更新 GitHub Environment Secret"
         if not messagebox.askyesno(
             "确认操作",
             f"{action}？\n\n目标：{repository}/{environment}\n"
-            f"上传名称：{', '.join(update.names)}\n"
-            "不会上传 cf_clearance 等 WAF Cookie。",
+            f"上传目标：{target_name}\n"
+            + (
+                f"New-Api-User：{update.api_user}\n"
+                if isinstance(update, AnyRouterUpdate)
+                else "不会上传 cf_clearance 等 WAF Cookie。\n"
+            ),
             parent=self.root,
         ):
             return
@@ -476,7 +674,7 @@ class CookieUpdaterApp:
                 if result.returncode != 0:
                     details = redact(
                         (result.stderr or result.stdout or "").strip(),
-                        [update.header, *[part.split("=", 1)[1] for part in update.header.split("; ")]],
+                        self._secret_parts(update),
                     )
                     raise RuntimeError(details or f"gh secret set 退出码 {result.returncode}")
 
@@ -484,13 +682,14 @@ class CookieUpdaterApp:
                 if trigger:
                     if not workflow:
                         raise RuntimeError("验证工作流名称不能为空。")
-                    verify = trigger_auth_test(repository=repository, workflow=workflow)
+                    if isinstance(update, AnyRouterUpdate):
+                        verify = trigger_anyrouter_checkin(repository=repository, workflow=workflow)
+                    else:
+                        verify = trigger_auth_test(repository=repository, workflow=workflow)
                     if verify.returncode != 0:
                         details = redact(
                             (verify.stderr or verify.stdout or "").strip(),
-                            [update.header, *[
-                                part.split("=", 1)[1] for part in update.header.split("; ")
-                            ]],
+                            self._secret_parts(update),
                         )
                         raise RuntimeError(
                             "Secret 已更新，但触发验证失败："
@@ -502,7 +701,7 @@ class CookieUpdaterApp:
                     0,
                     lambda: self._operation_done(
                         True,
-                        f"GitHub Secret 更新成功。上传 {len(update.names)} 个 Cookie。{verify_text}",
+                        f"GitHub Secret 更新成功。{verify_text}",
                     ),
                 )
             except (OSError, RuntimeError, subprocess.SubprocessError) as exc:
@@ -510,6 +709,12 @@ class CookieUpdaterApp:
                 self.root.after(0, lambda: self._operation_done(False, error_text))
 
         threading.Thread(target=worker, daemon=True).start()
+
+    @staticmethod
+    def _secret_parts(update: CookieUpdate | AnyRouterUpdate) -> list[str]:
+        if isinstance(update, AnyRouterUpdate):
+            return [update.secret_value]
+        return [update.header, *[part.split("=", 1)[1] for part in update.header.split("; ")]]
 
     def _operation_done(self, success: bool, message: str) -> None:
         self._set_busy(False)
@@ -528,6 +733,7 @@ def run_gui(args: argparse.Namespace) -> int:
         environment=args.environment,
         secret_name=args.secret_name,
         workflow=args.workflow,
+        target=args.target,
     )
     root.mainloop()
     return 0
@@ -539,6 +745,12 @@ def main() -> int:
     parser.add_argument("--environment", default=DEFAULT_ENVIRONMENT)
     parser.add_argument("--secret-name", default=DEFAULT_SECRET_NAME)
     parser.add_argument("--workflow", default=DEFAULT_WORKFLOW)
+    parser.add_argument(
+        "--target",
+        choices=("linuxdo", "anyrouter"),
+        default=DEFAULT_TARGET,
+        help="更新 LinuxDO 或 AnyRouter Secret。",
+    )
     parser.add_argument(
         "--file",
         type=Path,
@@ -560,6 +772,7 @@ def main() -> int:
             environment=args.environment,
             secret_name=args.secret_name,
             workflow=args.workflow,
+            target=args.target,
         )
         app.input_text.insert("1.0", content)
         app.preview_cookie(show_errors=False)
