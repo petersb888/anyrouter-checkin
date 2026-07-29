@@ -1,11 +1,14 @@
 import sys
 from pathlib import Path
+from types import SimpleNamespace
 
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
+import checkin
 from checkin import (
 	generate_balance_hash,
+	get_user_info_after_check_in,
 	select_notification_content,
 	should_notify_check_in_failure,
 	should_notify_check_in_reward,
@@ -71,3 +74,76 @@ def test_reward_notification_is_selected_without_failures():
 
 	assert title == '签到奖励通知'
 	assert content == ['[SUCCESS] 无名公益站 +$25']
+
+
+def test_apichatgpt_balance_polling_waits_for_delayed_settlement(monkeypatch):
+	before = {
+		'success': True,
+		'quota': 1.45,
+		'used_quota': 0.0,
+		'display': ':money: Current balance: $1.45, Used: $0.0',
+	}
+	responses = iter(
+		[
+			{
+				'success': True,
+				'quota': 1.45,
+				'used_quota': 0.0,
+				'display': ':money: Current balance: $1.45, Used: $0.0',
+			},
+			{
+				'success': True,
+				'quota': 2.87,
+				'used_quota': 0.0,
+				'display': ':money: Current balance: $2.87, Used: $0.0',
+			},
+		]
+	)
+	headers_seen = []
+	sleep_calls = []
+
+	def fake_get_user_info(_client, headers, _url):
+		headers_seen.append(headers)
+		return next(responses)
+
+	monkeypatch.setattr(checkin, 'get_user_info', fake_get_user_info)
+	monkeypatch.setattr(checkin.time, 'sleep', sleep_calls.append)
+
+	result = get_user_info_after_check_in(
+		client=object(),
+		headers={'User-Agent': 'test'},
+		user_info_url='https://example.test/api/user/self',
+		account_name='APIChatGPT',
+		provider_config=SimpleNamespace(name='apichatgpt'),
+		user_info_before=before,
+	)
+
+	assert result['quota'] == 2.87
+	assert sleep_calls == [checkin.APICHATGPT_BALANCE_SETTLEMENT_DELAY_SECONDS]
+	assert headers_seen[-1]['Cache-Control'] == 'no-cache, no-store'
+	assert headers_seen[-1]['Pragma'] == 'no-cache'
+
+
+def test_non_apichatgpt_balance_polling_is_not_delayed(monkeypatch):
+	after = {
+		'success': True,
+		'quota': 1.45,
+		'used_quota': 0.0,
+		'display': ':money: Current balance: $1.45, Used: $0.0',
+	}
+	sleep_calls = []
+
+	monkeypatch.setattr(checkin, 'get_user_info', lambda *_args, **_kwargs: after)
+	monkeypatch.setattr(checkin.time, 'sleep', sleep_calls.append)
+
+	result = get_user_info_after_check_in(
+		client=object(),
+		headers={},
+		user_info_url='https://example.test/api/user/self',
+		account_name='AnyRouter',
+		provider_config=SimpleNamespace(name='anyrouter'),
+		user_info_before=after,
+	)
+
+	assert result == after
+	assert sleep_calls == []

@@ -8,6 +8,7 @@ import hashlib
 import json
 import os
 import sys
+import time
 from datetime import datetime
 
 if hasattr(sys.stdout, 'reconfigure'):
@@ -41,6 +42,8 @@ from utils.proxy import get_playwright_proxy, get_proxy_server
 load_dotenv()
 
 BALANCE_HASH_FILE = 'balance_hash.txt'
+APICHATGPT_BALANCE_SETTLEMENT_RETRIES = 5
+APICHATGPT_BALANCE_SETTLEMENT_DELAY_SECONDS = 1
 
 
 def load_balance_hash():
@@ -280,6 +283,61 @@ def get_user_info(client, headers, user_info_url: str):
 		return {'success': False, 'error': f'Failed to get user info: {str(e)[:50]}...'}
 
 
+def get_user_info_after_check_in(
+	client,
+	headers,
+	user_info_url: str,
+	account_name: str,
+	provider_config,
+	user_info_before: dict | None,
+):
+	"""读取签到后的余额，兼容 APIChatGPT 的延迟到账。
+
+	APIChatGPT 的签到接口会先返回成功，余额写入随后才可在 ``/api/user/self``
+	读到。若立即查询，可能得到签到前的余额，导致奖励通知被错误跳过。
+	"""
+	request_headers = headers
+	if provider_config.name == 'apichatgpt':
+		request_headers = {
+			**headers,
+			'Cache-Control': 'no-cache, no-store',
+			'Pragma': 'no-cache',
+		}
+	user_info_after = get_user_info(client, request_headers, user_info_url)
+	if provider_config.name != 'apichatgpt':
+		if user_info_after and user_info_after.get('success'):
+			print(f'[INFO] {account_name}: Balance after check-in: {user_info_after["display"]}')
+		return user_info_after
+
+	if not (
+		user_info_before
+		and user_info_before.get('success')
+		and user_info_after
+		and user_info_after.get('success')
+	):
+		if user_info_after and user_info_after.get('success'):
+			print(f'[INFO] {account_name}: Balance after check-in: {user_info_after["display"]}')
+		return user_info_after
+
+	before_quota = user_info_before.get('quota')
+	for attempt in range(APICHATGPT_BALANCE_SETTLEMENT_RETRIES):
+		after_quota = user_info_after.get('quota')
+		if after_quota != before_quota:
+			break
+		print(
+			f'[INFO] {account_name}: Balance unchanged immediately after check-in; '
+			f'retrying ({attempt + 1}/{APICHATGPT_BALANCE_SETTLEMENT_RETRIES})'
+		)
+		time.sleep(APICHATGPT_BALANCE_SETTLEMENT_DELAY_SECONDS)
+		user_info_after = get_user_info(client, request_headers, user_info_url)
+		if not user_info_after or not user_info_after.get('success'):
+			break
+
+	if user_info_after and user_info_after.get('success'):
+		print(f'[INFO] {account_name}: Balance after check-in: {user_info_after["display"]}')
+	return user_info_after
+
+
 async def prepare_cookies(account_name: str, provider_config, user_cookies: dict) -> dict | None:
 	"""准备请求所需的 cookies（可能包含 WAF cookies）"""
 	waf_cookies = {}
@@ -483,7 +541,14 @@ def run_check_in_requests(
 
 			if provider_config.needs_manual_check_in():
 				success = execute_check_in(client, account_name, provider_config, headers)
-				user_info_after = get_user_info(client, headers, user_info_url)
+				user_info_after = get_user_info_after_check_in(
+					client,
+					headers,
+					user_info_url,
+					account_name,
+					provider_config,
+					user_info_before,
+				)
 				return success, user_info_before, user_info_after
 
 			user_info_after = get_user_info(client, headers, user_info_url)
