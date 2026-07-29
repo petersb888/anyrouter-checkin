@@ -1,0 +1,141 @@
+import json
+import subprocess
+
+import pytest
+
+from scripts.update_linuxdo_cookie import (
+    CookieFormatError,
+    CookieUpdate,
+    build_cookie_update,
+    set_github_secret,
+)
+
+
+def test_build_cookie_update_keeps_only_linuxdo_session_cookies() -> None:
+    raw = json.dumps(
+        [
+            {
+                "domain": ".linux.do",
+                "path": "/",
+                "name": "_t",
+                "value": "token-value",
+                "secure": True,
+            },
+            {
+                "domain": ".linux.do",
+                "path": "/",
+                "name": "_forum_session",
+                "value": "session-value",
+                "secure": True,
+            },
+            {
+                "domain": ".linux.do",
+                "path": "/",
+                "name": "cf_clearance",
+                "value": "browser-bound",
+            },
+            {
+                "domain": "example.com",
+                "name": "_t",
+                "value": "wrong-domain",
+            },
+        ]
+    )
+
+    update = build_cookie_update(raw)
+
+    assert update.header == "_t=token-value; _forum_session=session-value"
+    assert update.names == ("_t", "_forum_session")
+    assert update.input_count == 4
+    assert update.ignored_names == ("cf_clearance",)
+
+
+def test_build_cookie_update_accepts_cookie_editor_wrapper_and_prefers_root() -> None:
+    raw = json.dumps(
+        {
+            "cookies": [
+                {
+                    "domain": "sub.linux.do",
+                    "path": "/",
+                    "name": "_t",
+                    "value": "sub-token",
+                },
+                {
+                    "domain": "linux.do",
+                    "path": "/",
+                    "name": "_t",
+                    "value": "root-token",
+                },
+                {
+                    "domain": "linux.do",
+                    "path": "/",
+                    "name": "_forum_session",
+                    "value": "session",
+                },
+            ]
+        }
+    )
+
+    assert build_cookie_update(raw).header == "_t=root-token; _forum_session=session"
+
+
+@pytest.mark.parametrize(
+    "raw, message",
+    [
+        ("", "输入为空"),
+        ("[]", "缺少 LinuxDO 必需 Cookie"),
+        (
+            '[{"domain": ".linux.do", "name": "_t", "value": "x"}]',
+            "_forum_session",
+        ),
+        (
+            '[{"domain": ".linux.do", "name": "_t", "value": "x;bad"},'
+            '{"domain": ".linux.do", "name": "_forum_session", "value": "y"}]',
+            "非法分隔符",
+        ),
+    ],
+)
+def test_build_cookie_update_rejects_invalid_input(raw: str, message: str) -> None:
+    with pytest.raises(CookieFormatError, match=message):
+        build_cookie_update(raw)
+
+
+def test_set_github_secret_reads_value_from_stdin(monkeypatch: pytest.MonkeyPatch) -> None:
+    calls: list[tuple[list[str], str | None]] = []
+
+    def fake_run_gh(
+        args: list[str], *, stdin: str | None = None, timeout: int = 120
+    ) -> subprocess.CompletedProcess[str]:
+        calls.append((args, stdin))
+        return subprocess.CompletedProcess(args, 0, "", "")
+
+    monkeypatch.setattr("scripts.update_linuxdo_cookie.run_gh", fake_run_gh)
+    update = CookieUpdate(
+        header="_t=token; _forum_session=session",
+        names=("_t", "_forum_session"),
+        input_count=2,
+        ignored_names=(),
+    )
+
+    result = set_github_secret(
+        update,
+        repository="owner/repo",
+        environment="production",
+    )
+
+    assert result.returncode == 0
+    assert calls == [
+        (
+            [
+                "gh",
+                "secret",
+                "set",
+                "LINUXDO_COOKIES",
+                "--repo",
+                "owner/repo",
+                "--env",
+                "production",
+            ],
+            "_t=token; _forum_session=session",
+        )
+    ]
