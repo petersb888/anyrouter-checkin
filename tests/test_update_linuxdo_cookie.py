@@ -5,9 +5,11 @@ import pytest
 
 from scripts.update_linuxdo_cookie import (
     AnyRouterUpdate,
+    ApiChatGPTUpdate,
     CookieFormatError,
     CookieUpdate,
     build_anyrouter_update,
+    build_apichatgpt_update,
     build_cookie_update,
     set_github_secret,
 )
@@ -45,6 +47,81 @@ def test_build_anyrouter_update_accepts_cookie_header() -> None:
 
     assert json.loads(update.secret_value)[0]["cookies"] == {"session": "session-value"}
     assert set(update.ignored_names) == {"acw_tc", "cdn_sec_tc"}
+
+
+def test_build_apichatgpt_update_keeps_target_session_only() -> None:
+    raw = json.dumps(
+        [
+            {
+                "domain": ".api.apichatgpt.top",
+                "name": "session",
+                "value": "api-session-value",
+            },
+            {
+                "domain": ".api.apichatgpt.top",
+                "name": "cf_clearance",
+                "value": "browser-bound",
+            },
+            {
+                "domain": "example.com",
+                "name": "session",
+                "value": "wrong-domain",
+            },
+            {
+                "domain": ".api.apichatgpt.top",
+                "name": "other",
+                "value": "discarded",
+            },
+        ]
+    )
+
+    update = build_apichatgpt_update(raw, "5155")
+
+    assert isinstance(update, ApiChatGPTUpdate)
+    assert json.loads(update.secret_value) == [
+        {
+            "name": "APIChatGPT",
+            "provider": "apichatgpt",
+            "cookies": {"session": "api-session-value"},
+            "api_user": "5155",
+        }
+    ]
+    assert update.cookie_names == ("session",)
+    assert update.input_count == 4
+    assert update.ignored_names == ("cf_clearance",)
+    assert update.api_user == "5155"
+
+
+def test_build_apichatgpt_update_accepts_cookie_header_without_api_user() -> None:
+    update = build_apichatgpt_update(
+        "foo=discarded; session=session-value-with=equals; cf_clearance=old"
+    )
+
+    assert json.loads(update.secret_value) == [
+        {
+            "name": "APIChatGPT",
+            "provider": "apichatgpt",
+            "cookies": {"session": "session-value-with=equals"},
+        }
+    ]
+    assert update.api_user is None
+    assert update.ignored_names == ("cf_clearance",)
+
+
+@pytest.mark.parametrize(
+    "raw, api_user, message",
+    [
+        ("[]", "", "缺少 session"),
+        ('[{"name":"session","value":""}]', "", "缺少 session"),
+        ('[{"name":"session","value":"x"}]', "-1", "正整数"),
+        ('[{"name":"session","value":"x"}]', "not-a-number", "正整数"),
+    ],
+)
+def test_build_apichatgpt_update_rejects_invalid_input(
+    raw: str, api_user: str, message: str
+) -> None:
+    with pytest.raises(CookieFormatError, match=message):
+        build_apichatgpt_update(raw, api_user)
 
 
 @pytest.mark.parametrize(
@@ -189,3 +266,38 @@ def test_set_github_secret_reads_value_from_stdin(monkeypatch: pytest.MonkeyPatc
             "_t=token; _forum_session=session",
         )
     ]
+
+
+def test_set_github_secret_accepts_apichatgpt_payload(monkeypatch: pytest.MonkeyPatch) -> None:
+    calls: list[tuple[list[str], str | None]] = []
+
+    def fake_run_gh(
+        args: list[str], *, stdin: str | None = None, timeout: int = 120
+    ) -> subprocess.CompletedProcess[str]:
+        calls.append((args, stdin))
+        return subprocess.CompletedProcess(args, 0, "", "")
+
+    monkeypatch.setattr("scripts.update_linuxdo_cookie.run_gh", fake_run_gh)
+    update = build_apichatgpt_update(
+        '[{"domain":".api.apichatgpt.top","name":"session","value":"secret"}]'
+    )
+
+    result = set_github_secret(
+        update,
+        repository="owner/repo",
+        environment="production",
+        secret_name="APICHATGPT_ACCOUNTS",
+    )
+
+    assert result.returncode == 0
+    assert calls[0][0] == [
+        "gh",
+        "secret",
+        "set",
+        "APICHATGPT_ACCOUNTS",
+        "--repo",
+        "owner/repo",
+        "--env",
+        "production",
+    ]
+    assert calls[0][1] == update.secret_value

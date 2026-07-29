@@ -25,6 +25,20 @@ def test_psyche_provider_uses_new_api_checkin_endpoint(monkeypatch):
 	assert provider.needs_waf_cookies() is False
 
 
+def test_apichatgpt_provider_uses_session_checkin_endpoint(monkeypatch):
+	monkeypatch.delenv('PROVIDERS', raising=False)
+
+	provider = AppConfig.load_from_env().providers['apichatgpt']
+
+	assert provider.domain == 'https://api.apichatgpt.top'
+	assert provider.login_path == '/sign-in'
+	assert provider.sign_in_path == '/api/user/checkin'
+	assert provider.user_info_path == '/api/user/self'
+	assert provider.api_user_key == 'New-Api-User'
+	assert provider.requires_api_user is False
+	assert provider.needs_waf_cookies() is False
+
+
 def test_provider_profile_persistence_can_override_builtin(monkeypatch):
 	monkeypatch.setenv(
 		'PROVIDERS',
@@ -121,3 +135,27 @@ def test_accounts_from_both_secrets_are_combined_without_overwriting(monkeypatch
 		('anyrouter', 'AnyRouter'),
 		('psyche', '公益站'),
 	]
+
+
+def test_apichatgpt_accounts_allow_session_only_configuration(monkeypatch):
+	monkeypatch.delenv('ANYROUTER_ACCOUNTS', raising=False)
+	monkeypatch.delenv('PSYCHE_ACCOUNTS', raising=False)
+	monkeypatch.setenv(
+		'APICHATGPT_ACCOUNTS',
+		json.dumps(
+			[
+				{
+					'name': 'APIChatGPT',
+					'cookies': {'session': 'session-value'},
+				}
+			]
+		),
+	)
+
+	accounts = load_accounts_config()
+
+	assert accounts is not None
+	assert len(accounts) == 1
+	assert accounts[0].provider == 'apichatgpt'
+	assert accounts[0].api_user is None
+	assert accounts[0].cookies == {'session': 'session-value'}

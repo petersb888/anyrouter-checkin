@@ -62,12 +62,12 @@ def test_successful_check_in_does_not_notify_as_failure():
 def test_failure_notification_takes_priority_over_reward_notification():
 	title, content = select_notification_content(['[FAIL] AnyRouter HTTP 403'], ['[SUCCESS] 无名公益站 +$25'])
 
-	assert title == 'AnyRouter 签到失败告警'
+	assert title == '签到失败告警'
 	assert content == ['[FAIL] AnyRouter HTTP 403']
 
 
 def test_reward_notification_is_selected_without_failures():
 	title, content = select_notification_content([], ['[SUCCESS] 无名公益站 +$25'])
 
-	assert title == 'AnyRouter 签到奖励通知'
+	assert title == '签到奖励通知'
 	assert content == ['[SUCCESS] 无名公益站 +$25']

@@ -19,6 +19,7 @@ class ProviderConfig:
 	sign_in_path: str | None = '/api/user/sign_in'
 	user_info_path: str = '/api/user/self'
 	api_user_key: str = 'new-api-user'
+	requires_api_user: bool = True
 	bypass_method: Literal['waf_cookies'] | None = None
 	waf_cookie_names: List[str] | None = None
 	use_proxy: bool = False
@@ -57,6 +58,10 @@ class ProviderConfig:
 			sign_in_path=data.get('sign_in_path', defaults.sign_in_path if defaults else '/api/user/sign_in'),
 			user_info_path=data.get('user_info_path', defaults.user_info_path if defaults else '/api/user/self'),
 			api_user_key=data.get('api_user_key', defaults.api_user_key if defaults else 'new-api-user'),
+			requires_api_user=data.get(
+				'requires_api_user',
+				defaults.requires_api_user if defaults else True,
+			),
 			bypass_method=data.get('bypass_method', defaults.bypass_method if defaults else None),
 			waf_cookie_names=data.get('waf_cookie_names', defaults.waf_cookie_names if defaults else None),
 			use_proxy=data.get('use_proxy', default_use_proxy),
@@ -113,6 +118,22 @@ class AppConfig:
 				sign_in_path='/api/user/checkin',
 				user_info_path='/api/user/self',
 				api_user_key='new-api-user',
+				bypass_method=None,
+				waf_cookie_names=None,
+				use_proxy=False,
+				persist_profile=False,
+			),
+			'apichatgpt': ProviderConfig(
+				name='apichatgpt',
+				domain='https://api.apichatgpt.top',
+				login_path='/sign-in',
+				sign_in_path='/api/user/checkin',
+				user_info_path='/api/user/self',
+				api_user_key='New-Api-User',
+				# The site normally authenticates with its session cookie.  If a
+				# New-Api-User value is supplied it is still sent, but it is not
+				# mandatory in the account secret.
+				requires_api_user=False,
 				bypass_method=None,
 				waf_cookie_names=None,
 				use_proxy=False,
@@ -230,7 +251,8 @@ def _parse_accounts_config(
 			):
 				account_dict['name'] = '无名公益站'
 
-			if 'api_user' not in account_dict:
+			api_user_optional = default_provider == 'apichatgpt'
+			if 'api_user' not in account_dict and not api_user_optional:
 				has_login = account_dict.get('email') and account_dict.get('password')
 				if not has_login:
 					print(
@@ -263,6 +285,7 @@ def load_accounts_config() -> list[AccountConfig] | None:
 	account_sources = (
 		('ANYROUTER_ACCOUNTS', 'anyrouter'),
 		('PSYCHE_ACCOUNTS', 'psyche'),
+		('APICHATGPT_ACCOUNTS', 'apichatgpt'),
 	)
 	accounts: list[AccountConfig] = []
 	configured_sources = 0
@@ -282,7 +305,10 @@ def load_accounts_config() -> list[AccountConfig] | None:
 		accounts.extend(parsed_accounts)
 
 	if not configured_sources:
-		print('ERROR: ANYROUTER_ACCOUNTS or PSYCHE_ACCOUNTS environment variable is required')
+		print(
+			'ERROR: ANYROUTER_ACCOUNTS, PSYCHE_ACCOUNTS, or '
+			'APICHATGPT_ACCOUNTS environment variable is required'
+		)
 		return None
 
 	return accounts

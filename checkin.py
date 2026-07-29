@@ -90,9 +90,9 @@ def select_notification_content(
 ) -> tuple[str, list[str]]:
 	"""Make failures unmissable when a mixed account run has both outcomes."""
 	if failure_notification_content:
-		return 'AnyRouter 签到失败告警', failure_notification_content
+		return '签到失败告警', failure_notification_content
 	if reward_notification_content:
-		return 'AnyRouter 签到奖励通知', reward_notification_content
+		return '签到奖励通知', reward_notification_content
 	return '', []
 
 
@@ -471,6 +471,8 @@ def run_check_in_requests(
 			api_user = api_user_override or account.api_user
 			if api_user:
 				headers[provider_config.api_user_key] = api_user
+			elif provider_config.requires_api_user:
+				print(f'[WARN] {account_name}: Provider requires {provider_config.api_user_key}, but it is missing')
 
 			user_info_url = f'{provider_config.domain}{provider_config.user_info_path}'
 			user_info_before = get_user_info(client, headers, user_info_url)
@@ -509,7 +511,7 @@ async def main():
 	else:
 		print('[INFO] Debug mode disabled (set DEBUG_MODE=true to enable screenshots and verbose logs)')
 
-	print('[SYSTEM] AnyRouter.top multi-account auto check-in script started')
+	print('[SYSTEM] Multi-provider auto check-in script started')
 	print(f'[TIME] Execution time: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}')
 
 	app_config = AppConfig.load_from_env()
@@ -522,7 +524,7 @@ async def main():
 	if not accounts:
 		error_msg = '[FAILED] Unable to load account configuration, program exits'
 		print(error_msg)
-		notify.push_message('AnyRouter Check-in Alert', error_msg, msg_type='text')
+		notify.push_message('签到配置错误告警', error_msg, msg_type='text')
 		sys.exit(1)
 
 	print(f'[INFO] Found {len(accounts)} account configurations')

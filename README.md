@@ -7,7 +7,7 @@
 [![Code style: ruff](https://img.shields.io/badge/code%20style-ruff-000000.svg)](https://github.com/astral-sh/ruff)
 [![License](https://img.shields.io/github/license/millylee/anyrouter-check-in)](LICENSE)
 
-多平台多账号自动签到，理论上支持所有 NewAPI、OneAPI 平台，目前内置支持 Any Router、Agent Router 与无名公益站（welfare.0xpsyche.me），其它可根据文档进行摸索配置。
+多平台多账号自动签到，理论上支持所有 NewAPI、OneAPI 平台，目前内置支持 Any Router、Agent Router、无名公益站（welfare.0xpsyche.me）与 APIChatGPT（api.apichatgpt.top），其它可根据文档进行摸索配置。
 
 推荐搭配使用[Auo](https://github.com/millylee/auo)，支持任意 Claude Code Token 切换的工具。
 
@@ -90,7 +90,7 @@
 
 - 如果未提供 `provider` 字段，默认使用 `anyrouter`（向后兼容）
 - 如果未提供 `name` 字段，会使用 `Account 1`、`Account 2` 等默认名称
-- `anyrouter`、`agentrouter` 与 `psyche` 配置已内置，无需填写
+- `anyrouter`、`agentrouter`、`psyche` 与 `apichatgpt` 配置已内置，无需填写
 
 ### 无名公益站（welfare.0xpsyche.me）
 
@@ -111,7 +111,48 @@
 
 获取方式与上面的 AnyRouter Session 教程相同：在浏览器开发者工具的 Application/Cookies 中复制 `session`，在 Network 的已登录请求中复制 `New-Api-User`。不要把 Cookie 或用户标识写进仓库文件，只保存到 GitHub Environment Secret `PSYCHE_ACCOUNTS`。
 
-现有 Cloudflare 随机定时触发器会运行同一个 workflow。AnyRouter 继续使用 `ANYROUTER_ACCOUNTS`，无名公益站单独使用 `PSYCHE_ACCOUNTS`，两个 Secret 会在一次任务中合并执行，无需新增第二套定时器。
+现有 Cloudflare 随机定时触发器会运行同一个 workflow。AnyRouter、无名公益站和 APIChatGPT
+分别使用 `ANYROUTER_ACCOUNTS`、`PSYCHE_ACCOUNTS`、`APICHATGPT_ACCOUNTS`，三个 Secret
+会在一次任务中合并执行，无需新增第二套定时器。
+
+### APIChatGPT（api.apichatgpt.top）
+
+APIChatGPT 使用同一个 `checkin.yml` 自动签到流程，不需要新增定时器。先在浏览器登录
+`https://api.apichatgpt.top`，然后从**该域名**的 Cookie-Editor 导出 Cookie，至少包含
+`session`。可选的 `New-Api-User` 只能从该站点登录后的 Network 请求头复制；没有这个请求头时可以省略。
+
+在 `production` Environment 中添加 Secret `APICHATGPT_ACCOUNTS`：
+
+```json
+[
+  {
+    "name": "APIChatGPT",
+    "provider": "apichatgpt",
+    "cookies": {
+      "session": "浏览器中 api.apichatgpt.top 的 session"
+    }
+  }
+]
+```
+
+如 Network 请求中确实带有 `New-Api-User`，可以加入：
+
+```json
+[
+  {
+    "name": "APIChatGPT",
+    "provider": "apichatgpt",
+    "cookies": {
+      "session": "浏览器中 api.apichatgpt.top 的 session"
+    },
+    "api_user": "5155"
+  }
+]
+```
+
+脚本会请求 `/api/user/self`、`POST /api/user/checkin`，再查询余额确认结果。
+不要把 `cf_clearance`、`__cf_bm` 等浏览器/WAF 挑战 Cookie 写入 Secret；这些值通常绑定获取它们的浏览器和出口 IP。
+如果运行日志出现 `401 Unauthorized`，请重新从 `api.apichatgpt.top` 当前登录态导出 `session`，不要复用其它 New API 站点的 Cookie。
 
 如果使用 session cookies 登录，接下来获取 cookies 与 api_user 的值。
 
@@ -139,6 +180,27 @@
 3. 确认运行
 
 ![运行结果](./assets/check-in.png)
+
+### Cookie 一键更新 UI（Windows）
+
+本仓库提供 Tkinter 工具 `scripts/update_linuxdo_cookie.py`，可直接读取剪贴板中的
+Cookie-Editor JSON（也支持 `name=value; ...` Cookie header），选择目标后自动清洗并写入
+GitHub `production` Environment Secret。选择 **APIChatGPT** 时：
+
+1. 工具只保留 `api.apichatgpt.top` 的 `session`；
+2. 可选填写该站点请求头中的 `New-Api-User`；
+3. 点击“更新并触发验证”会更新 `APICHATGPT_ACCOUNTS`，然后调用现有 `checkin.yml`；
+4. `cf_clearance`、`__cf_bm` 等挑战 Cookie 不会上传。
+
+运行前请先安装并登录 GitHub CLI：
+
+```powershell
+gh auth login
+python scripts/update_linuxdo_cookie.py --target apichatgpt
+```
+
+工具不会把 Cookie 写入文件，也不会把 Cookie 放在 `gh` 命令行参数中；请确认
+`gh` 当前账号对目标仓库的 `production` Environment Secret 有写权限。
 
 ## 执行时间
 
@@ -203,7 +265,7 @@
 
 ## 自定义 Provider 配置（可选）
 
-默认情况下，`anyrouter`、`agentrouter`、`psyche` 已内置配置，无需额外设置。如果你需要使用其他服务商，可以通过环境变量 `PROVIDERS` 配置：
+默认情况下，`anyrouter`、`agentrouter`、`psyche`、`apichatgpt` 已内置配置，无需额外设置。如果你需要使用其他服务商，可以通过环境变量 `PROVIDERS` 配置：
 
 ### 基础配置（仅域名）
 
@@ -289,10 +351,14 @@
   - `domain: "https://welfare.0xpsyche.me"`
   - `sign_in_path: "/api/user/checkin"`
   - 无需 WAF Cookie；使用浏览器登录后的 `session` 与 `New-Api-User`
+- `apichatgpt`：
+  - `domain: "https://api.apichatgpt.top"`
+  - `sign_in_path: "/api/user/checkin"`
+  - 无需 WAF Cookie；默认只需要该站点的 `session`，`New-Api-User` 可选
 
 **重要提示**：
 
-- `PROVIDERS` 是可选的，不配置则使用内置的 `anyrouter`、`agentrouter` 和 `psyche`
+- `PROVIDERS` 是可选的，不配置则使用内置的 `anyrouter`、`agentrouter`、`psyche` 和 `apichatgpt`
 - 自定义的 provider 配置会覆盖同名的默认配置
 
 ## 代理配置（可选）
@@ -391,6 +457,7 @@ uv run python -m cloakbrowser install
 # 创建 .env 文件并配置（注意：JSON 必须是单行格式）
 # 示例：
 # ANYROUTER_ACCOUNTS=[{"name":"账号1","email":"your@email.com","password":"your_password"}]
+# APICHATGPT_ACCOUNTS=[{"name":"APIChatGPT","provider":"apichatgpt","cookies":{"session":"你的session值"}}]
 # PROVIDERS={"agentrouter":{"domain":"https://agentrouter.org"}}
 # PROXY_SUBSCRIPTION_URL=https://example.com/sub?token=xxx
 # CHECKIN_PROXY_URL=http://127.0.0.1:7890
