@@ -704,9 +704,9 @@ async def main():
 				account_result = format_check_in_notification(detail)
 				reward_notification_content.append(account_result)
 
-	if balance_snapshot_changed and not reward_notification_content:
+	if balance_snapshot_changed:
 		for detail in account_check_in_details.values():
-			if detail.get('success'):
+			if detail.get('success') and not should_notify_check_in_reward(detail):
 				balance_notification_content.append(format_balance_snapshot_notification(detail))
 
 	notification_title, notification_content = select_notification_content(
