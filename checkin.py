@@ -89,13 +89,17 @@ def should_notify_check_in_failure(success: bool) -> bool:
 
 
 def select_notification_content(
-	failure_notification_content: list[str], reward_notification_content: list[str]
+	failure_notification_content: list[str],
+	reward_notification_content: list[str],
+	balance_notification_content: list[str] | None = None,
 ) -> tuple[str, list[str]]:
 	"""Make failures unmissable when a mixed account run has both outcomes."""
 	if failure_notification_content:
 		return '签到失败告警', failure_notification_content
 	if reward_notification_content:
 		return '签到奖励通知', reward_notification_content
+	if balance_notification_content:
+		return '余额变化通知', balance_notification_content
 	return '', []
 
 
@@ -432,6 +436,19 @@ def format_check_in_notification(detail: dict) -> str:
 	return '\n'.join(lines)
 
 
+def format_balance_snapshot_notification(detail: dict) -> str:
+	"""格式化延迟到账或外部余额变化通知。"""
+	return '\n'.join(
+		[
+			f'[BALANCE] {detail["name"]}',
+			'  ━━━━━━━━━━━━━━━━━━━━',
+			'  检测到余额已更新（可能是签到延迟到账）',
+			f'  当前余额: ${detail["after_quota"]:.2f}',
+			f'  累计消耗: ${detail["after_used"]:.2f}',
+		]
+	)
+
+
 async def check_in_account(account: AccountConfig, account_index: int, app_config: AppConfig):
 	"""为单个账号执行签到操作"""
 	account_name = account.get_display_name(account_index)
@@ -600,9 +617,11 @@ async def main():
 	total_count = len(accounts)
 	failure_notification_content = []
 	reward_notification_content = []
+	balance_notification_content = []
 	current_balances = {}
 	account_check_in_details = {}
 	balance_changed = False
+	balance_snapshot_changed = False
 
 	for i, account in enumerate(accounts):
 		account_key = f'account_{i + 1}'
@@ -668,7 +687,8 @@ async def main():
 		if last_balance_hash is None:
 			print('[INFO] First balance snapshot saved; notification skipped until balance changes')
 		elif should_notify_balance_change(last_balance_hash, current_balance_hash):
-			print('[INFO] Balance snapshot changed; notification skipped unless this check-in increased balance')
+			balance_snapshot_changed = True
+			print('[INFO] Balance snapshot changed; preparing a balance-change notification')
 		else:
 			print('[INFO] No balance changes detected')
 
@@ -682,8 +702,15 @@ async def main():
 				account_result = format_check_in_notification(detail)
 				reward_notification_content.append(account_result)
 
+	if balance_snapshot_changed and not reward_notification_content:
+		for detail in account_check_in_details.values():
+			if detail.get('success'):
+				balance_notification_content.append(format_balance_snapshot_notification(detail))
+
 	notification_title, notification_content = select_notification_content(
-		failure_notification_content, reward_notification_content
+		failure_notification_content,
+		reward_notification_content,
+		balance_notification_content,
 	)
 	need_notify = bool(notification_content)
 
@@ -691,8 +718,10 @@ async def main():
 		print('[NOTIFY] Check-in failure detected, sending a separate failure alert')
 	elif balance_changed:
 		print('[NOTIFY] Check-in increased balance, will send notification')
+	elif balance_notification_content:
+		print('[NOTIFY] Balance snapshot changed, will send notification')
 	else:
-		print('[INFO] Check-in did not increase balance, notification skipped')
+		print('[INFO] No balance increase or balance snapshot change, notification skipped')
 
 	if current_balance_hash:
 		save_balance_hash(current_balance_hash)
@@ -732,7 +761,7 @@ async def main():
 		notify.push_message(notification_title, notify_content, msg_type='text')
 		print(f'[NOTIFY] {notification_title} sent')
 	else:
-		print('[INFO] No check-in balance increase or failure detected, notification skipped')
+		print('[INFO] No check-in reward, failure, or delayed balance change detected, notification skipped')
 
 	sys.exit(0 if success_count == total_count else 1)
 

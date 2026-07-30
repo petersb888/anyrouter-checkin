@@ -7,6 +7,7 @@ sys.path.insert(0, str(project_root))
 
 import checkin
 from checkin import (
+	format_balance_snapshot_notification,
 	generate_balance_hash,
 	get_user_info_after_check_in,
 	select_notification_content,
@@ -74,6 +75,26 @@ def test_reward_notification_is_selected_without_failures():
 
 	assert title == '签到奖励通知'
 	assert content == ['[SUCCESS] 无名公益站 +$25']
+
+
+def test_balance_snapshot_notification_is_selected_without_reward_or_failure():
+	title, content = select_notification_content([], [], ['[BALANCE] APIChatGPT'])
+
+	assert title == '余额变化通知'
+	assert content == ['[BALANCE] APIChatGPT']
+
+
+def test_balance_snapshot_notification_mentions_delayed_settlement():
+	content = format_balance_snapshot_notification(
+		{
+			'name': 'APIChatGPT',
+			'after_quota': 2.87,
+			'after_used': 0.0,
+		}
+	)
+
+	assert '延迟到账' in content
+	assert '当前余额: $2.87' in content
 
 
 def test_apichatgpt_balance_polling_waits_for_delayed_settlement(monkeypatch):
