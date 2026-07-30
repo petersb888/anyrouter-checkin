@@ -97,6 +97,8 @@ def select_notification_content(
 	if failure_notification_content:
 		return '签到失败告警', failure_notification_content
 	if reward_notification_content:
+		if balance_notification_content:
+			return '签到结果通知', reward_notification_content + balance_notification_content
 		return '签到奖励通知', reward_notification_content
 	if balance_notification_content:
 		return '余额变化通知', balance_notification_content

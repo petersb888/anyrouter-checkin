@@ -84,6 +84,18 @@ def test_balance_snapshot_notification_is_selected_without_reward_or_failure():
 	assert content == ['[BALANCE] APIChatGPT']
 
 
+def test_reward_and_balance_notifications_are_combined():
+	title, content = select_notification_content(['[FAIL] none'], ['[SUCCESS] AnyRouter'], ['[BALANCE] APIChatGPT'])
+
+	assert title == '签到失败告警'
+	assert content == ['[FAIL] none']
+
+	title, content = select_notification_content([], ['[SUCCESS] AnyRouter'], ['[BALANCE] APIChatGPT'])
+
+	assert title == '签到结果通知'
+	assert content == ['[SUCCESS] AnyRouter', '[BALANCE] APIChatGPT']
+
+
 def test_balance_snapshot_notification_mentions_delayed_settlement():
 	content = format_balance_snapshot_notification(
 		{
