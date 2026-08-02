@@ -16,6 +16,7 @@ class ProviderConfig:
 	name: str
 	domain: str
 	login_path: str = '/login'
+	login_api_path: str | None = None
 	sign_in_path: str | None = '/api/user/sign_in'
 	user_info_path: str = '/api/user/self'
 	api_user_key: str = 'new-api-user'
@@ -55,6 +56,7 @@ class ProviderConfig:
 			name=name,
 			domain=data['domain'],
 			login_path=data.get('login_path', defaults.login_path if defaults else '/login'),
+			login_api_path=data.get('login_api_path', defaults.login_api_path if defaults else None),
 			sign_in_path=data.get('sign_in_path', defaults.sign_in_path if defaults else '/api/user/sign_in'),
 			user_info_path=data.get('user_info_path', defaults.user_info_path if defaults else '/api/user/self'),
 			api_user_key=data.get('api_user_key', defaults.api_user_key if defaults else 'new-api-user'),
@@ -127,6 +129,7 @@ class AppConfig:
 				name='apichatgpt',
 				domain='https://api.apichatgpt.top',
 				login_path='/sign-in',
+				login_api_path='/api/user/login',
 				sign_in_path='/api/user/checkin',
 				user_info_path='/api/user/self',
 				api_user_key='New-Api-User',
@@ -194,13 +197,14 @@ class AccountConfig:
 		"""从字典创建 AccountConfig"""
 		provider = data.get('provider', 'anyrouter')
 		name = data.get('name', f'Account {index + 1}')
+		login_identifier = data.get('username') or data.get('email')
 
 		return cls(
 			cookies=data.get('cookies'),
 			api_user=data.get('api_user'),
 			provider=provider,
 			name=name if name else None,
-			email=data.get('email'),
+			email=login_identifier,
 			password=data.get('password'),
 		)
 
@@ -251,9 +255,10 @@ def _parse_accounts_config(
 			):
 				account_dict['name'] = '无名公益站'
 
+			login_identifier = account_dict.get('username') or account_dict.get('email')
 			api_user_optional = default_provider == 'apichatgpt'
 			if 'api_user' not in account_dict and not api_user_optional:
-				has_login = account_dict.get('email') and account_dict.get('password')
+				has_login = login_identifier and account_dict.get('password')
 				if not has_login:
 					print(
 						f'ERROR: {env_name} account {i + 1} missing required field (api_user) '
@@ -262,7 +267,7 @@ def _parse_accounts_config(
 					return None
 
 			has_cookies = 'cookies' in account_dict and account_dict['cookies']
-			has_login = account_dict.get('email') and account_dict.get('password')
+			has_login = login_identifier and account_dict.get('password')
 
 			if not has_cookies and not has_login:
 				print(f'ERROR: {env_name} account {i + 1} must have either cookies or email+password')

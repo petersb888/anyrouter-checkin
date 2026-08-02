@@ -117,11 +117,27 @@
 
 ### APIChatGPT（api.apichatgpt.top）
 
-APIChatGPT 使用同一个 `checkin.yml` 自动签到流程，不需要新增定时器。先在浏览器登录
-`https://api.apichatgpt.top`，然后从**该域名**的 Cookie-Editor 导出 Cookie，至少包含
-`session`。可选的 `New-Api-User` 只能从该站点登录后的 Network 请求头复制；没有这个请求头时可以省略。
+APIChatGPT 使用同一个 `checkin.yml` 自动签到流程，不需要新增定时器。推荐直接配置该站点的
+用户名和密码，脚本每次运行会调用 `/api/user/login` 刷新 `session`，不再依赖容易过期的手工 Cookie。
+`username` 可以是用户名或邮箱；旧格式也支持把登录标识写在 `email` 字段中。
 
 在 `production` Environment 中添加 Secret `APICHATGPT_ACCOUNTS`：
+
+```json
+[
+  {
+    "name": "APIChatGPT",
+    "provider": "apichatgpt",
+    "username": "你的用户名",
+    "password": "你的密码"
+  }
+]
+```
+
+如果暂时不想保存账号密码，也可以从**该域名**的 Cookie-Editor 导出 Cookie，至少包含
+`session`。可选的 `New-Api-User` 只能从该站点登录后的 Network 请求头复制；没有这个请求头时可以省略。
+
+Cookie 模式示例：
 
 ```json
 [
@@ -152,7 +168,9 @@ APIChatGPT 使用同一个 `checkin.yml` 自动签到流程，不需要新增定
 
 脚本会请求 `/api/user/self`、`POST /api/user/checkin`，再查询余额确认结果。
 不要把 `cf_clearance`、`__cf_bm` 等浏览器/WAF 挑战 Cookie 写入 Secret；这些值通常绑定获取它们的浏览器和出口 IP。
-如果运行日志出现 `401 Unauthorized`，请重新从 `api.apichatgpt.top` 当前登录态导出 `session`，不要复用其它 New API 站点的 Cookie。
+账号密码模式如果出现 `401 Unauthorized`，请先检查用户名、密码和站点是否启用了额外验证；
+Cookie 模式如果出现 `401 Unauthorized`，再从 `api.apichatgpt.top` 当前登录态重新导出 `session`，
+不要复用其它 New API 站点的 Cookie。
 
 如果使用 session cookies 登录，接下来获取 cookies 与 api_user 的值。
 

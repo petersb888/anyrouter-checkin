@@ -20,6 +20,7 @@ import httpx
 from cloakbrowser import launch_async
 from dotenv import load_dotenv
 
+from utils.auth import login_with_api_credentials
 from utils.browser import (
 	BrowserLoginResult,
 	has_session_cookie,
@@ -470,13 +471,24 @@ async def check_in_account(account: AccountConfig, account_index: int, app_confi
 	if account.has_login_credentials():
 		print(f'[INFO] {account_name}: Attempting email/password login (priority)...')
 		assert account.email is not None and account.password is not None
-		login_result = await login_with_credentials(
-			account_name,
-			provider_config,
-			account.provider,
-			account.email,
-			account.password,
-		)
+		if provider_config.login_api_path:
+			login_result = await login_with_api_credentials(
+				provider_config.domain,
+				provider_config.login_api_path,
+				provider_config.user_info_path,
+				account.email,
+				account.password,
+				account_name=account_name,
+				use_proxy=provider_config.use_proxy,
+			)
+		else:
+			login_result = await login_with_credentials(
+				account_name,
+				provider_config,
+				account.provider,
+				account.email,
+				account.password,
+			)
 		if login_result:
 			all_cookies = login_result.cookies
 			resolved_api_user = login_result.api_user
