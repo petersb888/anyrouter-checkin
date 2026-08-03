@@ -1,3 +1,4 @@
+import asyncio
 import sys
 from pathlib import Path
 from types import SimpleNamespace
@@ -107,6 +108,24 @@ def test_balance_snapshot_notification_mentions_delayed_settlement():
 
 	assert '延迟到账' in content
 	assert '当前余额: $2.87' in content
+
+
+def test_account_check_in_delay_sleeps_only_when_configured(monkeypatch):
+	sleep_calls = []
+
+	async def fake_sleep(delay):
+		sleep_calls.append(delay)
+
+	monkeypatch.setattr(checkin.asyncio, 'sleep', fake_sleep)
+
+	account = checkin.AccountConfig(cookies=None, name='APIChatGPT', delay_seconds=60)
+	asyncio.run(checkin.wait_before_account_check_in(account, 'APIChatGPT'))
+	assert sleep_calls == [60]
+
+	sleep_calls.clear()
+	account.delay_seconds = 0
+	asyncio.run(checkin.wait_before_account_check_in(account, 'APIChatGPT'))
+	assert sleep_calls == []
 
 
 def test_apichatgpt_balance_polling_waits_for_delayed_settlement(monkeypatch):

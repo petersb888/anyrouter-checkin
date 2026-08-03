@@ -452,6 +452,14 @@ def format_balance_snapshot_notification(detail: dict) -> str:
 	)
 
 
+async def wait_before_account_check_in(account: AccountConfig, account_name: str) -> None:
+	"""按账号配置错开签到开始时间。"""
+	if account.delay_seconds <= 0:
+		return
+	print(f'[WAIT] {account_name}: Delaying check-in for {account.delay_seconds}s')
+	await asyncio.sleep(account.delay_seconds)
+
+
 async def check_in_account(account: AccountConfig, account_index: int, app_config: AppConfig):
 	"""为单个账号执行签到操作"""
 	account_name = account.get_display_name(account_index)
@@ -640,6 +648,8 @@ async def main():
 	for i, account in enumerate(accounts):
 		account_key = f'account_{i + 1}'
 		try:
+			account_name = account.get_display_name(i)
+			await wait_before_account_check_in(account, account_name)
 			success, user_info_before, user_info_after = await check_in_account(account, i, app_config)
 			if success:
 				success_count += 1

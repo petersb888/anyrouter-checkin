@@ -129,10 +129,15 @@ APIChatGPT 使用同一个 `checkin.yml` 自动签到流程，不需要新增定
     "name": "APIChatGPT",
     "provider": "apichatgpt",
     "username": "你的用户名",
-    "password": "你的密码"
+    "password": "你的密码",
+    "delay_seconds": 0
   }
 ]
 ```
+
+同一 Secret 中可以配置多个 APIChatGPT 账号。`delay_seconds` 表示该账号相对于
+workflow 中前一个账号的启动延迟；例如第二个账号设置为 `60`，就会错开 60 秒签到，
+仍然使用现有 Cloudflare 触发器和同一个 `checkin.yml`。
 
 如果暂时不想保存账号密码，也可以从**该域名**的 Cookie-Editor 导出 Cookie，至少包含
 `session`。可选的 `New-Api-User` 只能从该站点登录后的 Network 请求头复制；没有这个请求头时可以省略。

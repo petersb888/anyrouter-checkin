@@ -191,6 +191,7 @@ class AccountConfig:
 	name: str | None = None
 	email: str | None = None
 	password: str | None = None
+	delay_seconds: int = 0
 
 	@classmethod
 	def from_dict(cls, data: dict, index: int) -> 'AccountConfig':
@@ -206,6 +207,7 @@ class AccountConfig:
 			name=name if name else None,
 			email=login_identifier,
 			password=data.get('password'),
+			delay_seconds=_parse_delay_seconds(data.get('delay_seconds', 0)),
 		)
 
 	def has_login_credentials(self) -> bool:
@@ -246,6 +248,12 @@ def _parse_accounts_config(
 				return None
 			account_dict = dict(account_dict)
 			account_dict.setdefault('provider', default_provider)
+			try:
+				delay_seconds = _parse_delay_seconds(account_dict.get('delay_seconds', 0))
+			except ValueError as exc:
+				print(f'ERROR: {env_name} account {i + 1} delay_seconds is invalid: {exc}')
+				return None
+			account_dict['delay_seconds'] = delay_seconds
 			configured_name = account_dict.get('name')
 			if (
 				default_provider == 'psyche'
@@ -283,6 +291,24 @@ def _parse_accounts_config(
 	except Exception as e:
 		print(f'ERROR: {env_name} account configuration format is incorrect: {e}')
 		return None
+
+
+def _parse_delay_seconds(value: object) -> int:
+	"""解析账号启动延迟，避免布尔值或小数被静默接受。"""
+	if value is None or value == '':
+		return 0
+	if isinstance(value, bool):
+		raise ValueError('must be a non-negative integer')
+	if isinstance(value, int):
+		delay_seconds = value
+	elif isinstance(value, str) and value.strip().isdigit():
+		delay_seconds = int(value.strip())
+	else:
+		raise ValueError('must be a non-negative integer')
+
+	if delay_seconds < 0 or delay_seconds > 86_400:
+		raise ValueError('must be between 0 and 86400')
+	return delay_seconds
 
 
 def load_accounts_config() -> list[AccountConfig] | None:

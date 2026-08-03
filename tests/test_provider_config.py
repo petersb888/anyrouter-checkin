@@ -186,3 +186,42 @@ def test_apichatgpt_accounts_accept_username_password_login(monkeypatch):
 	assert accounts[0].has_login_credentials() is True
 	assert accounts[0].email == 'synthetic-user'
 	assert accounts[0].password == 'synthetic-password'
+
+
+def test_account_delay_seconds_is_loaded_and_normalized(monkeypatch):
+	monkeypatch.delenv('ANYROUTER_ACCOUNTS', raising=False)
+	monkeypatch.delenv('PSYCHE_ACCOUNTS', raising=False)
+	monkeypatch.setenv(
+		'APICHATGPT_ACCOUNTS',
+		json.dumps(
+			{
+				'name': 'APIChatGPT',
+				'username': 'synthetic-user',
+				'password': 'synthetic-password',
+				'delay_seconds': '60',
+			}
+		),
+	)
+
+	accounts = load_accounts_config()
+
+	assert accounts is not None
+	assert accounts[0].delay_seconds == 60
+
+
+def test_account_delay_seconds_rejects_invalid_value(monkeypatch):
+	monkeypatch.delenv('ANYROUTER_ACCOUNTS', raising=False)
+	monkeypatch.delenv('PSYCHE_ACCOUNTS', raising=False)
+	monkeypatch.setenv(
+		'APICHATGPT_ACCOUNTS',
+		json.dumps(
+			{
+				'name': 'APIChatGPT',
+				'username': 'synthetic-user',
+				'password': 'synthetic-password',
+				'delay_seconds': -1,
+			}
+		),
+	)
+
+	assert load_accounts_config() is None
