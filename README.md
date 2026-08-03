@@ -111,9 +111,9 @@
 
 获取方式与上面的 AnyRouter Session 教程相同：在浏览器开发者工具的 Application/Cookies 中复制 `session`，在 Network 的已登录请求中复制 `New-Api-User`。不要把 Cookie 或用户标识写进仓库文件，只保存到 GitHub Environment Secret `PSYCHE_ACCOUNTS`。
 
-现有 Cloudflare 随机定时触发器会运行同一个 workflow。AnyRouter、无名公益站和 APIChatGPT
-分别使用 `ANYROUTER_ACCOUNTS`、`PSYCHE_ACCOUNTS`、`APICHATGPT_ACCOUNTS`，三个 Secret
-会在一次任务中合并执行，无需新增第二套定时器。
+现有 Cloudflare 随机定时触发器会调用同一个 workflow，但会按目标拆分执行。
+AnyRouter、无名公益站和 APIChatGPT 分别使用 `ANYROUTER_ACCOUNTS`、
+`PSYCHE_ACCOUNTS`、`APICHATGPT_ACCOUNTS`。
 
 ### APIChatGPT（api.apichatgpt.top）
 
@@ -126,18 +126,26 @@ APIChatGPT 使用同一个 `checkin.yml` 自动签到流程，不需要新增定
 ```json
 [
   {
-    "name": "APIChatGPT",
+    "name": "APIChatGPT-1",
     "provider": "apichatgpt",
     "username": "你的用户名",
     "password": "你的密码",
+    "delay_seconds": 0
+  },
+  {
+    "name": "APIChatGPT-2",
+    "provider": "apichatgpt",
+    "username": "你的第二个用户名",
+    "password": "你的第二个密码",
     "delay_seconds": 0
   }
 ]
 ```
 
-同一 Secret 中可以配置多个 APIChatGPT 账号。`delay_seconds` 表示该账号相对于
-workflow 中前一个账号的启动延迟；例如第二个账号设置为 `60`，就会错开 60 秒签到，
-仍然使用现有 Cloudflare 触发器和同一个 `checkin.yml`。
+同一 Secret 中可以配置多个 APIChatGPT 账号。Cloudflare 会分别 dispatch
+`account=apichatgpt-1` 和 `account=apichatgpt-2`，每个账号都是独立的 GitHub Actions
+运行，不再依赖 `delay_seconds`。两个目标会在较宽的本地时间窗口中分别随机，
+并保持数小时级别的最小间隔。`delay_seconds` 保留用于手动兼容旧配置，但建议设为 `0`。
 
 如果暂时不想保存账号密码，也可以从**该域名**的 Cookie-Editor 导出 Cookie，至少包含
 `session`。可选的 `New-Api-User` 只能从该站点登录后的 Network 请求头复制；没有这个请求头时可以省略。
@@ -214,6 +222,10 @@ GitHub `production` Environment Secret。选择 **APIChatGPT** 时：
 2. 可选填写该站点请求头中的 `New-Api-User`；
 3. 点击“更新并触发验证”会更新 `APICHATGPT_ACCOUNTS`，然后调用现有 `checkin.yml`；
 4. `cf_clearance`、`__cf_bm` 等挑战 Cookie 不会上传。
+
+手动运行 `checkin.yml` 时，`account` 输入可以选择 `all`、`non-apichatgpt`、
+`apichatgpt-1` 或 `apichatgpt-2`。Cloudflare 正式触发使用后两个值，因此两个
+APIChatGPT 账号不会在同一个 workflow 进程中串行执行。
 
 运行前请先安装并登录 GitHub CLI：
 

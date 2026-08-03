@@ -7,6 +7,16 @@ on:
         required: false
         default: false
         type: boolean
+      account:
+        description: 签到目标（Cloudflare 可分别触发两个 APIChatGPT 账号）
+        required: false
+        default: all
+        type: choice
+        options:
+          - all
+          - non-apichatgpt
+          - apichatgpt-1
+          - apichatgpt-2
 
 jobs:
   checkin:
@@ -16,6 +26,7 @@ jobs:
       PYTHONIOENCODING: utf-8
       PYTHONUNBUFFERED: 1
       DEBUG_MODE: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.debug == 'true' && 'true' || 'false' }}
+      CHECKIN_TARGET: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.account || 'all' }}
     steps:
     - uses: actions/checkout@v6
 

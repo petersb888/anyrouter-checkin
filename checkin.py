@@ -35,7 +35,7 @@ from utils.browser import (
 	verify_browser_login,
 	wait_for_waf_ready,
 )
-from utils.config import AccountConfig, AppConfig, load_accounts_config
+from utils.config import AccountConfig, AppConfig, load_accounts_config, select_accounts_for_target
 from utils.debug import debug_print, is_debug_enabled
 from utils.notify import notify
 from utils.proxy import get_playwright_proxy, get_proxy_server
@@ -631,6 +631,19 @@ async def main():
 		notify.push_message('签到配置错误告警', error_msg, msg_type='text')
 		sys.exit(1)
 
+	checkin_target = os.getenv('CHECKIN_TARGET', 'all').strip() or 'all'
+	selected_accounts = select_accounts_for_target(accounts, checkin_target)
+	if selected_accounts is None:
+		error_msg = f'[FAILED] Invalid CHECKIN_TARGET: {checkin_target}'
+		print(error_msg)
+		notify.push_message('签到配置错误告警', error_msg, msg_type='text')
+		sys.exit(1)
+	accounts = selected_accounts
+	if not accounts:
+		print(f'[INFO] CHECKIN_TARGET={checkin_target} selected no accounts; exiting successfully')
+		sys.exit(0)
+
+	print(f'[INFO] Check-in target: {checkin_target}')
 	print(f'[INFO] Found {len(accounts)} account configurations')
 
 	last_balance_hash = load_balance_hash()

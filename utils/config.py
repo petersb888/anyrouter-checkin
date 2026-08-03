@@ -343,3 +343,52 @@ def load_accounts_config() -> list[AccountConfig] | None:
 		return None
 
 	return accounts
+
+
+def select_accounts_for_target(
+	accounts: list[AccountConfig],
+	target: str | None = None,
+) -> list[AccountConfig] | None:
+	"""按 workflow 触发目标筛选账号。
+
+	``all``（默认）保留旧行为；``non-apichatgpt`` 用于 Cloudflare 的
+	常规站点触发；``apichatgpt-1`` / ``apichatgpt-2`` 等目标只运行
+	APICHATGPT_ACCOUNTS 中对应序号的账号。序号按该 Secret 中的顺序计算，
+	不会把账号密码复制到新的环境变量或日志中。
+	"""
+	raw_target = target if target is not None else os.getenv('CHECKIN_TARGET', 'all')
+	normalized = str(raw_target).strip().lower().replace('_', '-')
+
+	if normalized in {'', 'all', 'all-providers'}:
+		return accounts
+
+	if normalized in {'non-apichatgpt', 'non-api-chatgpt', 'general'}:
+		return [account for account in accounts if account.provider != 'apichatgpt']
+
+	prefixes = ('apichatgpt-', 'apichatgpt')
+	index_text = None
+	for prefix in prefixes:
+		if normalized.startswith(prefix):
+			index_text = normalized[len(prefix) :].lstrip('-')
+			break
+
+	if index_text and index_text.isdigit():
+		account_number = int(index_text)
+		if account_number < 1:
+			print(f'ERROR: CHECKIN_TARGET account number must be >= 1: {raw_target}')
+			return None
+
+		api_accounts = [account for account in accounts if account.provider == 'apichatgpt']
+		if account_number > len(api_accounts):
+			print(
+				f'ERROR: CHECKIN_TARGET requested APIChatGPT account {account_number}, '
+				f'but only {len(api_accounts)} account(s) are configured'
+			)
+			return None
+		return [api_accounts[account_number - 1]]
+
+	print(
+		f'ERROR: Unsupported CHECKIN_TARGET "{raw_target}". '
+		'Use all, non-apichatgpt, or apichatgpt-N'
+	)
+	return None

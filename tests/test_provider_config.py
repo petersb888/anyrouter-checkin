@@ -1,6 +1,6 @@
 import json
 
-from utils.config import AppConfig, ProviderConfig, load_accounts_config
+from utils.config import AppConfig, ProviderConfig, load_accounts_config, select_accounts_for_target
 
 
 def test_builtin_provider_profile_persistence_defaults(monkeypatch):
@@ -225,3 +225,57 @@ def test_account_delay_seconds_rejects_invalid_value(monkeypatch):
 	)
 
 	assert load_accounts_config() is None
+
+
+def test_checkin_target_selects_individual_apichatgpt_account(monkeypatch):
+	monkeypatch.delenv('ANYROUTER_ACCOUNTS', raising=False)
+	monkeypatch.delenv('PSYCHE_ACCOUNTS', raising=False)
+	monkeypatch.setenv(
+		'APICHATGPT_ACCOUNTS',
+		json.dumps(
+			[
+				{'name': 'APIChatGPT-1', 'username': 'user-1', 'password': 'pass-1'},
+				{'name': 'APIChatGPT-2', 'username': 'user-2', 'password': 'pass-2'},
+			]
+		),
+	)
+
+	accounts = load_accounts_config()
+	selected = select_accounts_for_target(accounts or [], 'apichatgpt-2')
+
+	assert selected is not None
+	assert len(selected) == 1
+	assert selected[0].get_display_name(0) == 'APIChatGPT-2'
+	assert selected[0].email == 'user-2'
+
+
+def test_checkin_target_keeps_non_apichatgpt_accounts(monkeypatch):
+	monkeypatch.setenv(
+		'ANYROUTER_ACCOUNTS',
+		json.dumps([{'name': 'AnyRouter', 'cookies': {'session': 'a'}, 'api_user': '1'}]),
+	)
+	monkeypatch.setenv(
+		'APICHATGPT_ACCOUNTS',
+		json.dumps([{'name': 'APIChatGPT', 'username': 'user', 'password': 'pass'}]),
+	)
+
+	accounts = load_accounts_config()
+	selected = select_accounts_for_target(accounts or [], 'non-apichatgpt')
+
+	assert selected is not None
+	assert [(account.provider, account.get_display_name(0)) for account in selected] == [('anyrouter', 'AnyRouter')]
+
+
+def test_checkin_target_rejects_missing_apichatgpt_account(monkeypatch, capsys):
+	monkeypatch.delenv('ANYROUTER_ACCOUNTS', raising=False)
+	monkeypatch.delenv('PSYCHE_ACCOUNTS', raising=False)
+	monkeypatch.setenv(
+		'APICHATGPT_ACCOUNTS',
+		json.dumps([{'name': 'APIChatGPT', 'username': 'user', 'password': 'pass'}]),
+	)
+
+	accounts = load_accounts_config()
+	selected = select_accounts_for_target(accounts or [], 'apichatgpt-2')
+
+	assert selected is None
+	assert 'only 1 account(s) are configured' in capsys.readouterr().out
