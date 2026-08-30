@@ -13,6 +13,11 @@ on:
         required: false
         default: false
         type: boolean
+      test_subscription:
+        description: 使用临时测试订阅，不修改生产订阅
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   contents: read
@@ -72,13 +77,24 @@ jobs:
       - name: 配置可选代理
         env:
           PROXY_SUBSCRIPTION_URL: ${{ secrets.PROXY_SUBSCRIPTION_URL }}
+          PROXY_TEST_SUBSCRIPTION_URL: ${{ secrets.PROXY_SUBSCRIPTION_URL_TEST }}
+          PROXY_USE_TEST_SUBSCRIPTION: ${{ inputs.test_subscription }}
           # LinuxDO 的 Cloudflare 会按出口 IP 评分；先保留订阅节点，随后
           # 用当前 Cookie 逐个验证，成功后才固定最终节点。
           PROXY_NODE_PROBE: true
           PROXY_TEST_URL: https://linux.do
           MIHOMO_VERSION: v1.19.27
           PROXY_REQUIRED: true
-        run: bash scripts/setup_mihomo_proxy.sh
+        run: |
+          if [ "${PROXY_USE_TEST_SUBSCRIPTION}" = "true" ]; then
+            if [ -z "${PROXY_TEST_SUBSCRIPTION_URL}" ]; then
+              echo "PROXY_SUBSCRIPTION_URL_TEST 未配置，无法执行临时订阅测试。" >&2
+              exit 1
+            fi
+            PROXY_SUBSCRIPTION_URL="${PROXY_TEST_SUBSCRIPTION_URL}" bash scripts/setup_mihomo_proxy.sh
+          else
+            bash scripts/setup_mihomo_proxy.sh
+          fi
 
       - name: 逐个验证代理节点
         if: inputs.notification_test != true
