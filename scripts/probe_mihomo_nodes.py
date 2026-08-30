@@ -21,9 +21,11 @@ from urllib.request import ProxyHandler, Request, build_opener
 
 DEFAULT_CONTROLLER_URL = 'http://127.0.0.1:9090'
 DEFAULT_GROUP = 'CHECKIN'
+DEFAULT_PROVIDER = 'subscription'
 DEFAULT_COOKIE_ENV = 'PROXY_NODE_PROBE_COOKIE'
 DEFAULT_SWITCH_TIMEOUT = 8.0
 DEFAULT_REQUEST_TIMEOUT = 20.0
+DEFAULT_PROVIDER_READY_TIMEOUT = 90.0
 MAX_RESPONSE_BYTES = 2_000_000
 CONTROLLER_OPENER = build_opener(ProxyHandler({}))
 
@@ -84,6 +86,34 @@ def _get_group_state(controller_url: str, group: str) -> tuple[list[str], str]:
 	return nodes, current if isinstance(current, str) else ''
 
 
+def _get_provider_nodes(controller_url: str, provider: str) -> list[str]:
+	"""Return the live node names loaded by one Mihomo proxy provider."""
+
+	data = _controller_json(controller_url, f'/providers/proxies/{quote(provider, safe="")}')
+	# Some Clash API-compatible implementations wrap the provider object in a
+	# top-level ``providers`` map even for the single-provider endpoint.
+	if 'providers' in data and isinstance(data['providers'], dict):
+		provider_data = data['providers'].get(provider)
+		if isinstance(provider_data, dict):
+			data = provider_data
+
+	proxies = data.get('proxies')
+	if not isinstance(proxies, list):
+		raise RuntimeError(f'Mihomo provider {provider!r} did not return a proxy list')
+
+	nodes: list[str] = []
+	for proxy in proxies:
+		if isinstance(proxy, str):
+			name = proxy
+		elif isinstance(proxy, dict):
+			name = proxy.get('name')
+		else:
+			name = None
+		if isinstance(name, str) and name.strip() and name not in nodes:
+			nodes.append(name)
+	return nodes
+
+
 def _select_node(controller_url: str, group: str, node: str) -> None:
 	status, _ = _request_controller(
 		f'{controller_url.rstrip("/")}/proxies/{quote(group, safe="")}',
@@ -118,21 +148,40 @@ def _wait_for_candidates(
 	group: str,
 	*,
 	timeout: float,
+	provider: str = DEFAULT_PROVIDER,
 ) -> tuple[list[str], str]:
-	"""Wait for Mihomo to fetch the provider before starting probes."""
+	"""Wait for the provider and group to expose the real subscription nodes.
+
+	Mihomo creates a temporary ``COMPATIBLE`` adapter while a proxy provider is
+	still loading. The group API can therefore return a non-empty list before
+	the subscription has actually been fetched. Use the provider API as the
+	source of truth and only return names that have also appeared in the group.
+	"""
 
 	deadline = time.monotonic() + timeout
 	last_error = 'unknown controller error'
 	while time.monotonic() < deadline:
 		try:
-			nodes, current = _get_group_state(controller_url, group)
+			provider_nodes = _get_provider_nodes(controller_url, provider)
+			group_nodes, current = _get_group_state(controller_url, group)
+			group_node_set = set(group_nodes)
+			nodes = [node for node in provider_nodes if node in group_node_set]
 			if nodes:
 				return nodes, current
-			last_error = f'group {group!r} has no provider nodes yet'
+			if provider_nodes:
+				last_error = (
+					f'provider {provider!r} loaded {len(provider_nodes)} node(s), '
+					f'but group {group!r} exposes none yet'
+				)
+			else:
+				last_error = f'provider {provider!r} has no subscription nodes yet'
 		except RuntimeError as exc:
 			last_error = str(exc)
 		time.sleep(0.5)
-	raise RuntimeError(f'Mihomo provider did not become ready within {timeout:g}s: {last_error}')
+	raise RuntimeError(
+		f'Mihomo provider {provider!r} did not expose usable nodes within '
+		f'{timeout:g}s: {last_error}'
+	)
 
 
 def classify_probe_response(status: int | None, body: bytes) -> str:
@@ -199,13 +248,20 @@ def probe_nodes(
 	probe_url: str,
 	cookie: str,
 	*,
+	provider: str = DEFAULT_PROVIDER,
 	switch_timeout: float = DEFAULT_SWITCH_TIMEOUT,
 	request_timeout: float = DEFAULT_REQUEST_TIMEOUT,
+	provider_ready_timeout: float = DEFAULT_PROVIDER_READY_TIMEOUT,
 	node_limit: int = 0,
 ) -> str | None:
 	"""Try nodes in group order and leave the successful node selected."""
 
-	nodes, _ = _wait_for_candidates(controller_url, group, timeout=max(30.0, switch_timeout))
+	nodes, _ = _wait_for_candidates(
+		controller_url,
+		group,
+		timeout=max(provider_ready_timeout, switch_timeout),
+		provider=provider,
+	)
 	if node_limit > 0:
 		nodes = nodes[:node_limit]
 	if not nodes:
@@ -239,11 +295,13 @@ def main() -> int:
 	parser = argparse.ArgumentParser(description='Probe Mihomo nodes against the LinuxDO session endpoint')
 	parser.add_argument('--controller-url', default=DEFAULT_CONTROLLER_URL)
 	parser.add_argument('--group', default=DEFAULT_GROUP)
+	parser.add_argument('--provider', default=DEFAULT_PROVIDER)
 	parser.add_argument('--proxy-url', required=True)
 	parser.add_argument('--probe-url', required=True)
 	parser.add_argument('--cookie-env', default=DEFAULT_COOKIE_ENV)
 	parser.add_argument('--switch-timeout', type=float, default=DEFAULT_SWITCH_TIMEOUT)
 	parser.add_argument('--request-timeout', type=float, default=DEFAULT_REQUEST_TIMEOUT)
+	parser.add_argument('--provider-ready-timeout', type=float, default=DEFAULT_PROVIDER_READY_TIMEOUT)
 	parser.add_argument('--node-limit', type=int, default=0)
 	args = parser.parse_args()
 
@@ -251,7 +309,12 @@ def main() -> int:
 	if not cookie:
 		print(f'[FAILED] {args.cookie_env} is required for an authenticated node probe', file=sys.stderr)
 		return 1
-	if args.switch_timeout <= 0 or args.request_timeout <= 0 or args.node_limit < 0:
+	if (
+		args.switch_timeout <= 0
+		or args.request_timeout <= 0
+		or args.provider_ready_timeout <= 0
+		or args.node_limit < 0
+	):
 		print('[FAILED] Probe timeouts must be positive and node limit must be non-negative', file=sys.stderr)
 		return 1
 
@@ -262,8 +325,10 @@ def main() -> int:
 			args.proxy_url,
 			args.probe_url,
 			cookie,
+			provider=args.provider,
 			switch_timeout=args.switch_timeout,
 			request_timeout=args.request_timeout,
+			provider_ready_timeout=args.provider_ready_timeout,
 			node_limit=args.node_limit,
 		)
 	except RuntimeError as exc:
