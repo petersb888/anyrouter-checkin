@@ -6,6 +6,7 @@
 #   PROXY_REQUIRED          true 时探测失败则退出 1
 #   PROXY_PORT              本地 mixed-port，默认 7890
 #   PROXY_NODE_FILTER       指定节点名称的正则；设置后仅使用匹配节点，不再按延迟自动切换
+#   PROXY_NODE_PROBE        true 时使用 select 组，交给后续探测脚本逐一验证节点
 #   PROXY_HEALTH_ATTEMPTS   网络健康检查最大次数，默认 45
 
 set -euo pipefail
@@ -21,6 +22,7 @@ PROXY_TEST_URL="${PROXY_TEST_URL:-https://www.google.com/generate_204}"
 MIHOMO_VERSION="${MIHOMO_VERSION:-v1.19.0}"
 PROXY_REQUIRED="${PROXY_REQUIRED:-false}"
 PROXY_NODE_FILTER="${PROXY_NODE_FILTER:-}"
+PROXY_NODE_PROBE="${PROXY_NODE_PROBE:-false}"
 PROXY_HEALTH_ATTEMPTS="${PROXY_HEALTH_ATTEMPTS:-45}"
 
 if [[ "${PROXY_NODE_FILTER}" == *$'\n'* || "${PROXY_NODE_FILTER}" == *$'\r'* ]]; then
@@ -49,7 +51,13 @@ gunzip -f "${ARCHIVE}"
 chmod +x "mihomo-linux-amd64-${MIHOMO_VERSION}"
 MIHOMO_BIN="${PROXY_DIR}/mihomo-linux-amd64-${MIHOMO_VERSION}"
 
-if [[ -n "${PROXY_NODE_FILTER}" ]]; then
+if [[ "${PROXY_NODE_PROBE}" == "true" ]]; then
+	# 节点探测模式必须保留所有订阅节点；后续脚本会通过 Controller 逐个切换，
+	# 只在 LinuxDO 会话 API 验证成功后留下最终节点。
+	CHECKIN_GROUP_TYPE="select"
+	CHECKIN_GROUP_OPTIONS=""
+	echo "[INFO] CHECKIN proxy will probe subscription nodes one by one"
+elif [[ -n "${PROXY_NODE_FILTER}" ]]; then
 	# select 只保留匹配节点；当过滤条件唯一时，Mihomo 不会在其它订阅节点间切换。
 	CHECKIN_GROUP_TYPE="select"
 	CHECKIN_GROUP_OPTIONS=$(cat <<EOF
@@ -104,6 +112,17 @@ EOF
 echo "[INFO] Starting mihomo on 127.0.0.1:${PROXY_PORT}..."
 nohup "${MIHOMO_BIN}" -d "${PROXY_DIR}" -f config.yaml > mihomo.log 2>&1 &
 echo $! > mihomo.pid
+
+if [[ "${PROXY_NODE_PROBE}" == "true" ]]; then
+	# 每个节点的 LinuxDO 会话验证由 probe_mihomo_nodes.py 完成；此处不能先用
+	# 任意默认节点做健康检查，否则会在真正探测前提前退出。
+	PROXY_URL="http://127.0.0.1:${PROXY_PORT}"
+	if [[ -n "${GITHUB_ENV:-}" ]]; then
+		echo "CHECKIN_PROXY_URL=${PROXY_URL}" >> "${GITHUB_ENV}"
+	fi
+	echo "[SUCCESS] Proxy is ready for per-node LinuxDO probing: ${PROXY_URL}"
+	exit 0
+fi
 
 if [[ -n "${PROXY_NODE_FILTER}" ]]; then
 	# select 组默认可能尚未选定成员。通过仅监听本机的 Controller 确认候选唯一，

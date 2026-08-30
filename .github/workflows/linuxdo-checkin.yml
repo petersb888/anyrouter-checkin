@@ -72,13 +72,22 @@ jobs:
       - name: 配置可选代理
         env:
           PROXY_SUBSCRIPTION_URL: ${{ secrets.PROXY_SUBSCRIPTION_URL }}
-          # 此订阅节点名唯一匹配；避免按 Google 延迟自动切到 LinuxDO 不接受的出口。
-          PROXY_NODE_FILTER: '^香港原生IP-1[|]勿跑大流量$'
+          # LinuxDO 的 Cloudflare 会按出口 IP 评分；先保留订阅节点，随后
+          # 用当前 Cookie 逐个验证，成功后才固定最终节点。
+          PROXY_NODE_PROBE: true
           PROXY_TEST_URL: https://linux.do
           MIHOMO_VERSION: v1.19.27
           PROXY_REQUIRED: true
-          PROXY_HEALTH_ATTEMPTS: 5
         run: bash scripts/setup_mihomo_proxy.sh
+
+      - name: 逐个验证代理节点
+        if: inputs.notification_test != true
+        env:
+          PROXY_NODE_PROBE_COOKIE: ${{ secrets.LINUXDO_COOKIES }}
+        run: |
+          python scripts/probe_mihomo_nodes.py \
+            --proxy-url "$CHECKIN_PROXY_URL" \
+            --probe-url "https://linux.do/session/current.json"
 
       - name: 将代理接入 LinuxDO 浏览器
         if: inputs.notification_test != true
