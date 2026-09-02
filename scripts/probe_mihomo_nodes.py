@@ -4,6 +4,12 @@ The proxy itself being reachable is not enough for LinuxDO: a node can return
 an HTTP response while Cloudflare still serves a challenge page.  This helper
 switches the Mihomo select group one node at a time and probes the Discourse
 session endpoint through the selected node.
+
+A plain urllib request is easy for Cloudflare to challenge, so a challenge
+response does not mean a real browser would fail: the DrissionPage runtime
+handles the WAF itself and validates the session afterwards.  Therefore this
+script only hard-fails when no node can reach LinuxDO at all; otherwise it
+leaves the most promising node selected and lets the browser decide.
 """
 
 from __future__ import annotations
@@ -28,6 +34,15 @@ DEFAULT_REQUEST_TIMEOUT = 20.0
 DEFAULT_PROVIDER_READY_TIMEOUT = 90.0
 MAX_RESPONSE_BYTES = 2_000_000
 CONTROLLER_OPENER = build_opener(ProxyHandler({}))
+# Fallback preference when no node passes the session probe: a node whose JSON
+# came through without a challenge pinpoints an invalid cookie (and its exit is
+# demonstrably clean), then any node Cloudflare only challenged, then any other
+# non-JSON HTTP response.  Nodes with network errors are never eligible.
+FALLBACK_CLASSIFICATION_ORDER = (
+	'json-without-authentication',
+	'cloudflare-challenge',
+	'non-json-response',
+)
 
 
 @dataclass(frozen=True)
@@ -254,7 +269,13 @@ def probe_nodes(
 	provider_ready_timeout: float = DEFAULT_PROVIDER_READY_TIMEOUT,
 	node_limit: int = 0,
 ) -> str | None:
-	"""Try nodes in group order and leave the successful node selected."""
+	"""Try nodes in group order and leave the successful node selected.
+
+	Nodes that answer the session probe without a Cloudflare challenge are
+	preferred.  When none qualifies, the most promising reachable node stays
+	selected so the browser runtime can handle the WAF itself; only a run with
+	zero reachable nodes returns ``None``.
+	"""
 
 	nodes, _ = _wait_for_candidates(
 		controller_url,
@@ -269,6 +290,9 @@ def probe_nodes(
 		return None
 
 	print(f'[INFO] Probing {len(nodes)} subscription node(s) against LinuxDO session API')
+	best_node: str | None = None
+	best_classification: str | None = None
+	best_status: int | None = None
 	for index, node in enumerate(nodes, start=1):
 		print(f'[INFO] Testing node {index}/{len(nodes)}: {node}')
 		try:
@@ -285,10 +309,40 @@ def probe_nodes(
 		if result.classification == 'authenticated':
 			print(f'[SUCCESS] Node {node} returned an authenticated LinuxDO session (HTTP {status_text})')
 			return node
+		if result.classification in FALLBACK_CLASSIFICATION_ORDER:
+			rank = FALLBACK_CLASSIFICATION_ORDER.index(result.classification)
+			if best_node is None or rank < FALLBACK_CLASSIFICATION_ORDER.index(best_classification):
+				best_node = node
+				best_classification = result.classification
+				best_status = result.status
 		print(f'[WARN] Node {node} rejected the session probe: HTTP {status_text}, {result.classification}')
 
-	print('[FAILED] No subscription node returned an authenticated LinuxDO session without a challenge', file=sys.stderr)
-	return None
+	if best_node is None:
+		print(
+			'[FAILED] No subscription node could reach LinuxDO at all (all network errors); '
+			'check the subscription and its nodes',
+			file=sys.stderr,
+		)
+		return None
+
+	status_text = str(best_status) if best_status is not None else '000'
+	if best_classification == 'json-without-authentication':
+		print(
+			f'[WARN] Cloudflare allowed the session probe but the session is not authenticated '
+			f'(HTTP {status_text}); LINUXDO_COOKIES may be expired'
+		)
+	else:
+		print(
+			f'[WARN] No node passed the session probe without a Cloudflare challenge; '
+			f'the browser will handle the WAF'
+		)
+	print(f'[INFO] Falling back to node {best_node} (HTTP {status_text}, {best_classification})')
+	try:
+		_select_node(controller_url, group, best_node)
+		_wait_for_node(controller_url, group, best_node, timeout=switch_timeout)
+	except RuntimeError as exc:
+		print(f'[WARN] Could not re-select fallback node {best_node}: {exc}')
+	return best_node
 
 
 def main() -> int:

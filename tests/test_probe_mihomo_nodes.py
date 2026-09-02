@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from scripts.probe_mihomo_nodes import (
+	ProbeResult,
 	_get_provider_nodes,
 	classify_probe_response,
 	probe_nodes,
@@ -81,8 +82,6 @@ def test_probe_nodes_switches_until_authenticated(monkeypatch) -> None:
 		state['current'] = node
 
 	def fake_probe(_proxy_url, _probe_url, _cookie, *, timeout):
-		from scripts.probe_mihomo_nodes import ProbeResult
-
 		return ProbeResult(
 			status=403 if state['current'] == 'node-1' else 200,
 			classification=(
@@ -105,4 +104,93 @@ def test_probe_nodes_switches_until_authenticated(monkeypatch) -> None:
 			provider='subscription',
 		)
 		== 'node-2'
+	)
+
+
+def _install_probe_stub(monkeypatch, nodes: list[str], results: dict[str, ProbeResult]) -> list[str]:
+	"""Stub out controller interactions; ``results`` is keyed by node name."""
+
+	selected: list[str] = []
+	current = {'node': nodes[0]}
+
+	monkeypatch.setattr(
+		'scripts.probe_mihomo_nodes._wait_for_candidates',
+		lambda *_args, **_kwargs: (nodes, nodes[0]),
+	)
+
+	def fake_select(_controller_url, _group, node):
+		selected.append(node)
+		current['node'] = node
+
+	monkeypatch.setattr('scripts.probe_mihomo_nodes._select_node', fake_select)
+	monkeypatch.setattr('scripts.probe_mihomo_nodes._wait_for_node', lambda *_args, **_kwargs: True)
+	monkeypatch.setattr(
+		'scripts.probe_mihomo_nodes._probe_node',
+		lambda _proxy_url, _probe_url, _cookie, *, timeout: results[current['node']],
+	)
+	return selected
+
+
+def test_probe_nodes_falls_back_to_challenged_node(monkeypatch) -> None:
+	selected = _install_probe_stub(
+		monkeypatch,
+		['node-1', 'node-2'],
+		{node: ProbeResult(403, 'cloudflare-challenge') for node in ('node-1', 'node-2')},
+	)
+
+	assert (
+		probe_nodes(
+			'http://controller',
+			'CHECKIN',
+			'http://proxy',
+			'https://linux.do/session/current.json',
+			'cookie',
+			provider='subscription',
+		)
+		== 'node-1'
+	)
+	# The fallback node must be left selected after the loop re-selects it.
+	assert selected[-1] == 'node-1'
+
+
+def test_probe_nodes_prefers_clean_json_exit_for_cookie_diagnosis(monkeypatch) -> None:
+	_install_probe_stub(
+		monkeypatch,
+		['node-1', 'node-2'],
+		{
+			'node-1': ProbeResult(403, 'cloudflare-challenge'),
+			'node-2': ProbeResult(200, 'json-without-authentication'),
+		},
+	)
+
+	assert (
+		probe_nodes(
+			'http://controller',
+			'CHECKIN',
+			'http://proxy',
+			'https://linux.do/session/current.json',
+			'cookie',
+			provider='subscription',
+		)
+		== 'node-2'
+	)
+
+
+def test_probe_nodes_fails_when_every_node_is_unreachable(monkeypatch) -> None:
+	_install_probe_stub(
+		monkeypatch,
+		['node-1', 'node-2'],
+		{node: ProbeResult(None, 'network-error') for node in ('node-1', 'node-2')},
+	)
+
+	assert (
+		probe_nodes(
+			'http://controller',
+			'CHECKIN',
+			'http://proxy',
+			'https://linux.do/session/current.json',
+			'cookie',
+			provider='subscription',
+		)
+		is None
 	)
