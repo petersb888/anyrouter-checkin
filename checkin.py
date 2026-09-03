@@ -717,7 +717,7 @@ async def main():
 		except Exception as e:
 			account_name = account.get_display_name(i)
 			print(f'[FAILED] {account_name} processing exception: {e}')
-			failure_notification_content.append(f'[FAIL] {account_name} exception: {str(e)[:50]}...')
+			failure_notification_content.append(f'[FAIL] {account_name} exception: {str(e)[:200]}')
 
 	current_balance_hash = generate_balance_hash(current_balances) if current_balances else None
 	if current_balance_hash:
@@ -794,9 +794,15 @@ async def main():
 				screenshot_hint += ' to `checkin_screenshots/`'
 			notify_content += f'\n\n{screenshot_hint}'
 
-		print(notify_content)
-		notify.push_message(notification_title, notify_content, msg_type='text')
-		print(f'[NOTIFY] {notification_title} sent')
+			github_run_id = os.getenv('GITHUB_RUN_ID', '').strip()
+			github_repo = os.getenv('GITHUB_REPOSITORY', '').strip()
+			if github_run_id and github_repo:
+				run_url = f'https://github.com/{github_repo}/actions/runs/{github_run_id}'
+				notify_content += f'\n\n[LOG] Full log: {run_url}'
+
+			print(notify_content)
+			notify.push_message(notification_title, notify_content, msg_type='text')
+			print(f'[NOTIFY] {notification_title} sent')
 	else:
 		print('[INFO] No check-in reward, failure, or delayed balance change detected, notification skipped')
 
