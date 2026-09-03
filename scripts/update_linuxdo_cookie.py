@@ -40,6 +40,7 @@ DEFAULT_TARGET = "linuxdo"
 REQUIRED_COOKIE_NAMES = ("_t", "_forum_session")
 ANYROUTER_WAF_COOKIE_NAMES = ("acw_tc", "cdn_sec_tc", "acw_sc__v2")
 APICHATGPT_COOKIE_NAMES = ("session",)
+AGENTROUTER_COOKIE_NAMES = ("session",)
 IGNORED_WAF_COOKIE_NAMES = {
     "cf_clearance",
     "__cf_bm",
@@ -398,6 +399,89 @@ def build_apichatgpt_update(raw_input: str, api_user: str = '') -> ApiChatGPTUpd
     )
 
 
+def build_agentrouter_update(raw_input: str, api_user: str = '') -> ApiChatGPTUpdate:
+    """Build the ``AGENTROUTER_ACCOUNTS`` payload from Cookie-Editor JSON/header.
+
+    AgentRouter is a New API deployment behind an Aliyun WAF; only the durable
+    ``session`` cookie is uploaded because ``acw_tc`` is bound to the client IP
+    and is fetched fresh by the workflow at runtime.  ``New-Api-User`` stays
+    optional the same way as APIChatGPT.
+    """
+
+    text = raw_input.strip()
+    if not text:
+        raise CookieFormatError('Input is empty. Paste Cookie-Editor JSON or a Cookie header.')
+
+    try:
+        data = _load_json(text)
+    except CookieFormatError:
+        data = None
+
+    items: list[dict[str, Any]] | None = None
+    if data is not None:
+        try:
+            items = _cookie_items(data)
+        except CookieFormatError:
+            items = None
+
+    cookies: dict[str, str] = {}
+    ignored_names: set[str] = set()
+    if items is not None:
+        for item in items:
+            name = str(item.get('name', '') or '').strip()
+            if not name:
+                continue
+            value = item.get('value')
+            if value is None or str(value) == '':
+                continue
+            domain = str(item.get('domain', '') or '').strip().lower().lstrip('.')
+            if domain and domain != 'agentrouter.org' and not domain.endswith('.agentrouter.org'):
+                continue
+            if name in IGNORED_WAF_COOKIE_NAMES:
+                ignored_names.add(name)
+            if name not in AGENTROUTER_COOKIE_NAMES:
+                continue
+            cookies.setdefault(name, _normalise_cookie_value(value, name))
+        input_count = len(items)
+    else:
+        parsed = _parse_cookie_header(text)
+        input_count = len(parsed)
+        for name, value in parsed.items():
+            if name in IGNORED_WAF_COOKIE_NAMES:
+                ignored_names.add(name)
+            if name in AGENTROUTER_COOKIE_NAMES:
+                cookies[name] = _normalise_cookie_value(value, name)
+
+    if 'session' not in cookies:
+        raise CookieFormatError(
+            'AgentRouter Cookie 中缺少 session；请在 agentrouter.org 登录后重新导出。'
+        )
+
+    api_user = api_user.strip()
+    if api_user and (not api_user.isdigit() or int(api_user) <= 0):
+        raise CookieFormatError(
+            'AgentRouter 的 New-Api-User 如填写必须是登录请求中的正整数 ID。'
+        )
+
+    cookie_payload = {name: cookies[name] for name in AGENTROUTER_COOKIE_NAMES}
+    account: dict[str, Any] = {
+        'name': 'AgentRouter',
+        'provider': 'agentrouter',
+        'cookies': cookie_payload,
+    }
+    if api_user:
+        account['api_user'] = api_user
+
+    secret_value = json.dumps([account], ensure_ascii=False, separators=(',', ':'))
+    return ApiChatGPTUpdate(
+        secret_value=secret_value,
+        cookie_names=AGENTROUTER_COOKIE_NAMES,
+        input_count=input_count,
+        ignored_names=tuple(sorted(ignored_names)),
+        api_user=api_user or None,
+    )
+
+
 def redact(text: str, secrets: Iterable[str]) -> str:
     """Remove cookie values from command output before it reaches the GUI."""
 
@@ -546,7 +630,7 @@ class CookieUpdaterApp:
         target_box = ttk.Combobox(
             config,
             textvariable=self.target,
-            values=("linuxdo", "anyrouter", "apichatgpt"),
+            values=("linuxdo", "anyrouter", "agentrouter", "apichatgpt"),
             state="readonly",
             width=22,
         )
@@ -612,8 +696,18 @@ class CookieUpdaterApp:
                     "必须填写已登录请求中的 New-Api-User。"
                 )
             )
+        elif target == "agentrouter":
+            self.secret_name.set("AGENTROUTER_ACCOUNTS")
+            self.workflow.set("checkin.yml")
+            self.api_user_entry.configure(state=NORMAL)
+            self.hint.configure(
+                text=(
+                    "AgentRouter 只上传 agentrouter.org 的 session。"
+                    "New-Api-User 可选：如果 Network 请求中存在该请求头，可一并填写；"
+                    "acw_tc 等 WAF Cookie 运行时会自动获取，不会上传。"
+                )
+            )
         elif target == "apichatgpt":
-            self.secret_name.set("APICHATGPT_ACCOUNTS")
             self.workflow.set("checkin.yml")
             self.api_user_entry.configure(state=NORMAL)
             self.hint.configure(
@@ -694,6 +788,8 @@ class CookieUpdaterApp:
         try:
             if self.target.get() == "anyrouter":
                 update = build_anyrouter_update(self._get_input(), self.api_user.get())
+            elif self.target.get() == "agentrouter":
+                update = build_agentrouter_update(self._get_input(), self.api_user.get())
             elif self.target.get() == "apichatgpt":
                 update = build_apichatgpt_update(self._get_input(), self.api_user.get())
             else:
@@ -765,7 +861,7 @@ class CookieUpdaterApp:
         if isinstance(update, AnyRouterUpdate):
             target_name = "AnyRouter"
         elif isinstance(update, ApiChatGPTUpdate):
-            target_name = "APIChatGPT"
+            target_name = "AgentRouter" if self.target.get() == "agentrouter" else "APIChatGPT"
         else:
             target_name = "LinuxDO"
         action = f"更新 {target_name} Secret 并触发验证" if trigger else "更新 GitHub Environment Secret"
@@ -873,9 +969,9 @@ def main() -> int:
     parser.add_argument("--workflow", default=DEFAULT_WORKFLOW)
     parser.add_argument(
         "--target",
-        choices=("linuxdo", "anyrouter", "apichatgpt"),
+        choices=("linuxdo", "anyrouter", "agentrouter", "apichatgpt"),
         default=DEFAULT_TARGET,
-        help="更新 LinuxDO、AnyRouter 或 APIChatGPT Secret。",
+        help="更新 LinuxDO、AnyRouter、AgentRouter 或 APIChatGPT Secret。",
     )
     parser.add_argument(
         "--file",

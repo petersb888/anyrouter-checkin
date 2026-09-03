@@ -3,6 +3,7 @@ import subprocess
 
 import pytest
 
+from scripts.update_linuxdo_cookie import build_agentrouter_update
 from scripts.update_linuxdo_cookie import (
     AnyRouterUpdate,
     ApiChatGPTUpdate,
@@ -301,3 +302,32 @@ def test_set_github_secret_accepts_apichatgpt_payload(monkeypatch: pytest.Monkey
         "production",
     ]
     assert calls[0][1] == update.secret_value
+
+
+def test_build_agentrouter_update_accepts_session_and_ignores_waf_cookies() -> None:
+    import json as _json
+
+    raw = _json.dumps(
+        [
+            {"name": "session", "value": "sess-value", "domain": "agentrouter.org"},
+            {"name": "acw_tc", "value": "waf-value", "domain": "agentrouter.org"},
+            {"name": "cf_clearance", "value": "cf", "domain": ".agentrouter.org"},
+        ]
+    )
+
+    update = build_agentrouter_update(raw, api_user="12345")
+
+    assert update.cookie_names == ("session",)
+    assert "cf_clearance" in update.ignored_names
+    assert _json.loads(update.secret_value) == [
+        {"name": "AgentRouter", "provider": "agentrouter", "cookies": {"session": "sess-value"}, "api_user": "12345"}
+    ]
+
+
+def test_build_agentrouter_update_requires_session() -> None:
+    import pytest as _pytest
+
+    from scripts.update_linuxdo_cookie import CookieFormatError as _Err
+
+    with _pytest.raises(_Err):
+        build_agentrouter_update('[{"name": "acw_tc", "value": "x", "domain": "agentrouter.org"}]')

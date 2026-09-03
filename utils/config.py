@@ -315,6 +315,7 @@ def load_accounts_config() -> list[AccountConfig] | None:
 	"""从分站点环境变量加载账号配置，兼容原有 ANYROUTER_ACCOUNTS。"""
 	account_sources = (
 		('ANYROUTER_ACCOUNTS', 'anyrouter'),
+		('AGENTROUTER_ACCOUNTS', 'agentrouter'),
 		('PSYCHE_ACCOUNTS', 'psyche'),
 		('APICHATGPT_ACCOUNTS', 'apichatgpt'),
 	)
@@ -337,7 +338,7 @@ def load_accounts_config() -> list[AccountConfig] | None:
 
 	if not configured_sources:
 		print(
-			'ERROR: ANYROUTER_ACCOUNTS, PSYCHE_ACCOUNTS, or '
+			'ERROR: ANYROUTER_ACCOUNTS, AGENTROUTER_ACCOUNTS, PSYCHE_ACCOUNTS, or '
 			'APICHATGPT_ACCOUNTS environment variable is required'
 		)
 		return None
