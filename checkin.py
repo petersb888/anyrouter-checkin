@@ -794,15 +794,15 @@ async def main():
 				screenshot_hint += ' to `checkin_screenshots/`'
 			notify_content += f'\n\n{screenshot_hint}'
 
-			github_run_id = os.getenv('GITHUB_RUN_ID', '').strip()
-			github_repo = os.getenv('GITHUB_REPOSITORY', '').strip()
-			if github_run_id and github_repo:
-				run_url = f'https://github.com/{github_repo}/actions/runs/{github_run_id}'
-				notify_content += f'\n\n[LOG] Full log: {run_url}'
+		github_run_id = os.getenv('GITHUB_RUN_ID', '').strip()
+		github_repo = os.getenv('GITHUB_REPOSITORY', '').strip()
+		if github_run_id and github_repo:
+			run_url = f'https://github.com/{github_repo}/actions/runs/{github_run_id}'
+			notify_content += f'\n\n[LOG] Full log: {run_url}'
 
-			print(notify_content)
-			notify.push_message(notification_title, notify_content, msg_type='text')
-			print(f'[NOTIFY] {notification_title} sent')
+		print(notify_content)
+		notify.push_message(notification_title, notify_content, msg_type='text')
+		print(f'[NOTIFY] {notification_title} sent')
 	else:
 		print('[INFO] No check-in reward, failure, or delayed balance change detected, notification skipped')
 
