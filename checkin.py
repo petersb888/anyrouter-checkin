@@ -35,7 +35,14 @@ from utils.browser import (
 	verify_browser_login,
 	wait_for_waf_ready,
 )
-from utils.config import AccountConfig, AppConfig, load_accounts_config, select_accounts_for_target
+from utils.config import (
+	AccountConfig,
+	AppConfig,
+	filter_disabled_providers,
+	load_accounts_config,
+	load_disabled_providers,
+	select_accounts_for_target,
+)
 from utils.debug import debug_print, is_debug_enabled
 from utils.notify import notify
 from utils.proxy import get_playwright_proxy, get_proxy_server
@@ -603,6 +610,33 @@ def run_check_in_requests(
 		return False, None, None
 
 
+def is_disabled_provider_target(target: str, disabled: set[str]) -> bool:
+	"""Return True when CHECKIN_TARGET explicitly points to a disabled provider."""
+	if not disabled:
+		return False
+
+	normalized = str(target or '').strip().lower().replace('_', '-')
+	if not normalized or normalized in {
+		'all',
+		'all-providers',
+		'non-apichatgpt',
+		'non-api-chatgpt',
+		'general',
+	}:
+		return False
+
+	for name in disabled:
+		if normalized == name:
+			return True
+
+		if normalized.startswith(name):
+			remainder = normalized[len(name):]
+			if remainder.startswith('-') or remainder.isdigit():
+				return True
+
+	return False
+
+
 async def main():
 	"""主函数"""
 	if is_debug_enabled():
@@ -632,12 +666,44 @@ async def main():
 		sys.exit(1)
 
 	checkin_target = os.getenv('CHECKIN_TARGET', 'all').strip() or 'all'
+	disabled_providers = load_disabled_providers()
+	if disabled_providers:
+		print(f'[INFO] Disabled providers: {", ".join(sorted(disabled_providers))}')
+
 	selected_accounts = select_accounts_for_target(accounts, checkin_target)
 	if selected_accounts is None:
+		if is_disabled_provider_target(checkin_target, disabled_providers):
+			print(
+				f'[INFO] CHECKIN_TARGET={checkin_target} refers to a provider disabled via '
+				'DISABLED_PROVIDERS; exiting successfully'
+			)
+			sys.exit(0)
+
 		error_msg = f'[FAILED] Invalid CHECKIN_TARGET: {checkin_target}'
 		print(error_msg)
 		notify.push_message('签到配置错误告警', error_msg, msg_type='text')
 		sys.exit(1)
+	if disabled_providers:
+		enabled_accounts = filter_disabled_providers(selected_accounts, disabled_providers)
+		skipped_count = len(selected_accounts) - len(enabled_accounts)
+		if skipped_count:
+			skipped_names = sorted(
+				{
+					str(account.provider).strip().lower()
+					for account in selected_accounts
+					if str(account.provider).strip().lower() in disabled_providers
+				}
+			)
+			print(
+				f'[INFO] Skipped disabled provider(s): {", ".join(skipped_names)} '
+				f'({skipped_count} account(s))'
+			)
+			if not enabled_accounts:
+				print('[INFO] All selected accounts are disabled via DISABLED_PROVIDERS; exiting successfully')
+				sys.exit(0)
+
+		selected_accounts = enabled_accounts
+
 	accounts = selected_accounts
 	if not accounts:
 		print(f'[INFO] CHECKIN_TARGET={checkin_target} selected no accounts; exiting successfully')

@@ -346,6 +346,51 @@ def load_accounts_config() -> list[AccountConfig] | None:
 	return accounts
 
 
+def load_disabled_providers() -> set[str]:
+	"""解析 DISABLED_PROVIDERS 环境变量，返回需要跳过签到的 provider 名称集合。
+
+	支持三种写法：``apichatgpt``、``apichatgpt, psyche``（逗号或空格分隔）、
+	``["apichatgpt"]``（JSON 数组）。返回值统一去除空白并转为小写；解析失败时
+	只打印 [WARNING] 并返回空集合，绝不能因为开关写错就让整个签到崩溃。
+	"""
+	raw = os.getenv('DISABLED_PROVIDERS', '').strip()
+	if not raw:
+		return set()
+
+	text = raw
+	if text.startswith('['):
+		try:
+			decoded = json.loads(text)
+		except json.JSONDecodeError as e:
+			print(f'[WARNING] Failed to parse DISABLED_PROVIDERS as JSON array: {e}, ignoring switch')
+			return set()
+
+		if not isinstance(decoded, list):
+			print('[WARNING] DISABLED_PROVIDERS must be a JSON array of provider names, ignoring switch')
+			return set()
+
+		names: list[str] = []
+		for item in decoded:
+			if isinstance(item, str):
+				names.append(item)
+			else:
+				print(f'[WARNING] Ignoring non-string DISABLED_PROVIDERS entry: {item!r}')
+		text = ','.join(names)
+	elif '{' in text or '}' in text:
+		print('[WARNING] DISABLED_PROVIDERS must be a comma/space separated list or a JSON array, ignoring switch')
+		return set()
+
+	return {token.strip().lower() for token in text.replace(',', ' ').split() if token.strip()}
+
+
+def filter_disabled_providers(accounts: list[AccountConfig], disabled: set[str] | None) -> list[AccountConfig]:
+	"""按 provider 过滤账号，保留未被禁用的账号，顺序保持不变。"""
+	if not disabled:
+		return accounts
+
+	return [account for account in accounts if str(account.provider).strip().lower() not in disabled]
+
+
 def select_accounts_for_target(
 	accounts: list[AccountConfig],
 	target: str | None = None,

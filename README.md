@@ -396,6 +396,39 @@ python scripts/update_linuxdo_cookie.py --target apichatgpt
 - `PROVIDERS` 是可选的，不配置则使用内置的 `anyrouter`、`agentrouter`、`psyche` 和 `apichatgpt`
 - 自定义的 provider 配置会覆盖同名的默认配置
 
+## 临时关闭某个站点的签到（可选）
+
+如果某个站点暂时签不上（例如登录接口持续报错），又不想删掉已经保存的账号密钥，
+可以用变量 `DISABLED_PROVIDERS` 把它跳过。
+
+在仓库 Settings -> Secrets and variables -> Actions -> Repository variables（若启用了
+Environment，则选对应环境，例如 production -> Variables）中新建变量：
+
+- 名称：`DISABLED_PROVIDERS`
+- 值：要跳过的站点名，多个站点用逗号或空格分隔，也支持 JSON 数组写法
+
+例如关闭拼车站（APIChatGPT）：
+
+```text
+DISABLED_PROVIDERS = apichatgpt
+```
+
+其它等价写法：
+
+```text
+DISABLED_PROVIDERS = apichatgpt, psyche
+DISABLED_PROVIDERS = ["apichatgpt"]
+```
+
+可用站点名：`anyrouter`、`agentrouter`、`psyche`、`apichatgpt`（不区分大小写）。
+
+行为说明：
+
+- 被跳过的站点不会启动浏览器、不会发起签到，也不会发送失败告警，本次任务按成功结束。
+- 账号密钥保持原样，不需要删除任何 Secret；想恢复签到时删掉或清空这个变量即可。
+- 如果本次运行选中的账号全被跳过，脚本会打印说明并以成功退出。
+- 变量值格式非法时只打印警告并忽略开关，不会影响其它站点正常签到。
+
 ## 代理配置（可选）
 
 内置的 `agentrouter` 默认 `use_proxy: true`。如果你的运行环境访问该平台不稳定，可以在 GitHub Actions 中配置 mihomo 订阅代理。
