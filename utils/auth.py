@@ -91,7 +91,8 @@ async def login_with_api_credentials(
 			try:
 				login_payload = response.json()
 			except ValueError:
-				print(f'[FAILED] {account_name}: API credential login returned invalid JSON')
+				snippet = ' '.join(response.text.split())[:160]
+				print(f'[FAILED] {account_name}: API credential login returned invalid JSON: {snippet}')
 				return None
 			if not _response_is_successful(login_payload):
 				print(f'[FAILED] {account_name}: API credential login was rejected')
