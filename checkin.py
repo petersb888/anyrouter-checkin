@@ -292,7 +292,12 @@ def get_user_info(client, headers, user_info_url: str):
 					'used_quota': used_quota,
 					'display': f':money: Current balance: ${quota}, Used: ${used_quota}',
 				}
-		return {'success': False, 'error': f'Failed to get user info: HTTP {response.status_code}'}
+		# 失败响应只含错误说明，不含凭证，打印片段便于定位 401 原因。
+		snippet = ' '.join(response.text.split())[:160]
+		error = f'Failed to get user info: HTTP {response.status_code}'
+		if snippet:
+			error = f'{error} - {snippet}'
+		return {'success': False, 'error': error}
 	except Exception as e:
 		return {'success': False, 'error': f'Failed to get user info: {str(e)[:50]}...'}
 
