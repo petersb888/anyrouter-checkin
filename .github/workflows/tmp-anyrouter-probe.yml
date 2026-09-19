@@ -18,7 +18,7 @@ jobs:
         PROBE_ID: ${{ vars.PROBE_ANYROUTER_ID }}
       run: |
         python - <<'PY'
-        import json, os, urllib.error, urllib.request
+        import gzip, json, os, urllib.error, urllib.request
 
         raw = os.environ.get('ANYROUTER_ACCOUNTS', '').strip()
         data = json.loads(raw)
@@ -46,10 +46,19 @@ jobs:
             req = urllib.request.Request(D + '/api/user/self', headers=headers)
             try:
                 with urllib.request.urlopen(req, timeout=30) as resp:
-                    text = resp.read().decode('utf-8', 'replace')
+                    raw_bytes = resp.read()
+                    if resp.headers.get('Content-Encoding') == 'gzip':
+                        raw_bytes = gzip.decompress(raw_bytes)
+                    text = raw_bytes.decode('utf-8', 'replace')
                     status = resp.status
             except urllib.error.HTTPError as exc:
-                text = exc.read().decode('utf-8', 'replace')
+                raw_bytes = exc.read()
+                if exc.headers.get('Content-Encoding') == 'gzip':
+                    try:
+                        raw_bytes = gzip.decompress(raw_bytes)
+                    except Exception:
+                        pass
+                text = raw_bytes.decode('utf-8', 'replace')
                 status = exc.code
             except Exception as exc:
                 text = f'{type(exc).__name__}: {exc}'
