@@ -18,7 +18,7 @@ jobs:
         PROBE_ID: ${{ vars.PROBE_ANYROUTER_ID }}
       run: |
         python - <<'PY'
-        import json, os, httpx
+        import json, os, urllib.error, urllib.request
 
         raw = os.environ.get('ANYROUTER_ACCOUNTS', '').strip()
         data = json.loads(raw)
@@ -41,9 +41,19 @@ jobs:
             headers = dict(H)
             if candidate:
                 headers['New-Api-User'] = str(candidate)
-            with httpx.Client(timeout=30.0) as c:
-                c.cookies.update(cookies)
-                r = c.get(D + '/api/user/self', headers=headers)
-            body = ' '.join(r.text.split())[:150]
-            print(f'candidate={candidate!r} -> HTTP {r.status_code} | {body}')
+            if cookies:
+                headers['Cookie'] = '; '.join(f'{k}={v}' for k, v in cookies.items())
+            req = urllib.request.Request(D + '/api/user/self', headers=headers)
+            try:
+                with urllib.request.urlopen(req, timeout=30) as resp:
+                    text = resp.read().decode('utf-8', 'replace')
+                    status = resp.status
+            except urllib.error.HTTPError as exc:
+                text = exc.read().decode('utf-8', 'replace')
+                status = exc.code
+            except Exception as exc:
+                text = f'{type(exc).__name__}: {exc}'
+                status = 'ERR'
+            body = ' '.join(text.split())[:150]
+            print(f'candidate={candidate!r} -> HTTP {status} | {body}')
         PY
