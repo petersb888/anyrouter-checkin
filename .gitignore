@@ -12,4 +12,12 @@ balance_hash.txt
 .browser_profiles
 checkin_screenshots
 
+# 本地临时探针、日志与工具产物：绝不入库（曾误提交含凭证文件）
+_tmp_*
+fixed_accounts.json
+.serena/
+active_task_checkpoint/
+xai_*.html
+extract_pricing.cjs
+
 .DS_Store
