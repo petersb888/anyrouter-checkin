@@ -1,0 +1,46 @@
+name: TMP AnyRouter probe
+
+on:
+  workflow_dispatch:
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    environment: production
+    env:
+      PYTHONIOENCODING: utf-8
+      PYTHONUNBUFFERED: 1
+    steps:
+    - uses: actions/checkout@v6
+
+    - uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b
+      with:
+        version: "latest"
+
+    - uses: actions/setup-python@v6
+      with:
+        python-version: '3.11'
+
+    - name: 安装依赖
+      run: uv sync --frozen
+
+    - name: 安装系统依赖
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y xvfb fonts-noto-color-emoji fonts-freefont-ttf fonts-unifont
+
+    - name: 缓存 CloakBrowser 二进制
+      uses: actions/cache@v5
+      with:
+        path: ~/.cloakbrowser
+        key: ${{ runner.os }}-cloakbrowser-v1
+        restore-keys: |
+          ${{ runner.os }}-cloakbrowser-
+
+    - name: 安装 CloakBrowser
+      run: uv run python -m cloakbrowser install
+
+    - name: 探针
+      env:
+        ANYROUTER_ACCOUNTS: ${{ secrets.ANYROUTER_ACCOUNTS }}
+      run: xvfb-run -a --server-args="-screen 0 1920x1080x24" uv run python _tmp_probe_anyrouter.py
