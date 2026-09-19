@@ -84,6 +84,28 @@ def test_api_credential_login_forwards_api_user_key(monkeypatch):
 	assert client.get_calls[0][1]['headers']['new-api-user'] == '5155'
 
 
+def test_api_credential_login_seeds_waf_cookies(monkeypatch):
+	client = FakeAsyncClient()
+	monkeypatch.setattr(auth.httpx, 'AsyncClient', lambda **kwargs: client)
+	monkeypatch.setattr(auth, 'get_proxy_server', lambda use_proxy: None)
+
+	result = asyncio.run(
+		auth.login_with_api_credentials(
+			'https://example.test',
+			'/api/user/login',
+			'/api/user/self',
+			'synthetic-user',
+			'synthetic-password',
+			account_name='AgentRouter',
+			seed_cookies={'acw_tc': 'synthetic-acw'},
+		)
+	)
+
+	assert result is not None
+	assert client.cookies['acw_tc'] == 'synthetic-acw'
+	assert result.cookies['acw_tc'] == 'synthetic-acw'
+
+
 def test_api_credential_login_rejects_failed_response(monkeypatch):
 	client = FakeAsyncClient()
 	client.post = _failed_post

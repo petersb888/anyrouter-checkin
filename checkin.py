@@ -486,6 +486,18 @@ async def check_in_account(account: AccountConfig, account_index: int, app_confi
 	if account.has_login_credentials():
 		print(f'[INFO] {account_name}: Attempting email/password login (priority)...')
 		assert account.email is not None and account.password is not None
+		# 有 WAF 保护的站点连登录接口都会被拦截，需先用浏览器取得放行 cookie。
+		seed_cookies = None
+		if provider_config.needs_waf_cookies():
+			seed_cookies = await get_waf_cookies_with_browser(
+				account_name,
+				f'{provider_config.domain}{provider_config.login_path}',
+				provider_config.waf_cookie_names or [],
+				use_proxy=provider_config.use_proxy,
+			)
+			if not seed_cookies:
+				print(f'[FAILED] {account_name}: Unable to get WAF cookies for credential login')
+				return False, None, None
 		if provider_config.login_api_path:
 			login_result = await login_with_api_credentials(
 				provider_config.domain,
@@ -496,6 +508,7 @@ async def check_in_account(account: AccountConfig, account_index: int, app_confi
 				account_name=account_name,
 				use_proxy=provider_config.use_proxy,
 				api_user_key=provider_config.api_user_key,
+				seed_cookies=seed_cookies,
 			)
 		else:
 			login_result = await login_with_credentials(

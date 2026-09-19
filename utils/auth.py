@@ -54,6 +54,7 @@ async def login_with_api_credentials(
 	account_name: str,
 	use_proxy: bool = False,
 	api_user_key: str | None = None,
+	seed_cookies: dict[str, str] | None = None,
 ) -> CredentialLoginResult | None:
 	"""通过 New-API 登录接口刷新 session，并用用户信息接口验证。"""
 	client_kwargs: dict = {'http2': True, 'timeout': 30.0, 'follow_redirects': True}
@@ -79,6 +80,9 @@ async def login_with_api_credentials(
 
 	try:
 		async with httpx.AsyncClient(**client_kwargs) as client:
+			if seed_cookies:
+				client.cookies.update(seed_cookies)
+
 			response = await client.post(
 				login_url,
 				headers={**headers, 'Content-Type': 'application/json'},
