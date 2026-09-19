@@ -113,7 +113,9 @@ class AppConfig:
 				api_user_key='new-api-user',
 				bypass_method='waf_cookies',
 				waf_cookie_names=['acw_tc'],
-				use_proxy=True,
+				# 登录接口走海外代理会被阿里云 WAF 拦截并返回验证页，
+				# 因此认证与签到必须直连；仅浏览器取 WAF cookie 时可另行走代理。
+				use_proxy=False,
 				persist_profile=False,
 			),
 			'psyche': ProviderConfig(

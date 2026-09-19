@@ -98,12 +98,9 @@ async def login_with_api_credentials(
 				print(f'[FAILED] {account_name}: API credential login was rejected')
 				return None
 
-			profile = _extract_profile(login_payload)
-			if not profile:
-				print(f'[FAILED] {account_name}: API credential login returned no profile')
-				return None
-
 			# New-API 的部分站点要求请求头携带当前用户 ID，否则用户信息接口返回 401。
+			# 登录响应未带用户资料时保持原有行为，不阻断后续验证。
+			profile = _extract_profile(login_payload) or {}
 			verify_headers = dict(headers)
 			verify_headers.update({'Cache-Control': 'no-cache, no-store', 'Pragma': 'no-cache'})
 			profile_id = profile.get('id')
