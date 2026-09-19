@@ -1,0 +1,775 @@
+checkin	Set up job	﻿2026-09-19T04:59:59.5965659Z Current runner version: '2.337.0'
+checkin	Set up job	2026-09-19T04:59:59.5991436Z ##[group]Runner Image Provisioner
+checkin	Set up job	2026-09-19T04:59:59.5992563Z Hosted Compute Agent
+checkin	Set up job	2026-09-19T04:59:59.5993218Z Version: 20260828.587
+checkin	Set up job	2026-09-19T04:59:59.5994071Z Commit: abac92662cab4cc7352de4f9f9d2e2419aad9c29
+checkin	Set up job	2026-09-19T04:59:59.5994864Z Build Date: 2026-08-28T16:44:25Z
+checkin	Set up job	2026-09-19T04:59:59.5995695Z Worker ID: {6ea37fd0-1533-4d53-b71d-c4c3761b74c5}
+checkin	Set up job	2026-09-19T04:59:59.5996555Z Azure Region: westus
+checkin	Set up job	2026-09-19T04:59:59.5997193Z ##[endgroup]
+checkin	Set up job	2026-09-19T04:59:59.5998825Z ##[group]Operating System
+checkin	Set up job	2026-09-19T04:59:59.5999525Z Ubuntu
+checkin	Set up job	2026-09-19T04:59:59.6000259Z 24.04.5
+checkin	Set up job	2026-09-19T04:59:59.6000903Z LTS
+checkin	Set up job	2026-09-19T04:59:59.6002021Z ##[endgroup]
+checkin	Set up job	2026-09-19T04:59:59.6002692Z ##[group]Runner Image
+checkin	Set up job	2026-09-19T04:59:59.6003407Z Image: ubuntu-24.04
+checkin	Set up job	2026-09-19T04:59:59.6004085Z Version: 20260907.300.1
+checkin	Set up job	2026-09-19T04:59:59.6005327Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20260907.300/images/ubuntu/Ubuntu2404-Readme.md
+checkin	Set up job	2026-09-19T04:59:59.6007110Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20260907.300
+checkin	Set up job	2026-09-19T04:59:59.6008237Z ##[endgroup]
+checkin	Set up job	2026-09-19T04:59:59.6009632Z ##[group]GITHUB_TOKEN Permissions
+checkin	Set up job	2026-09-19T04:59:59.6011817Z Contents: read
+checkin	Set up job	2026-09-19T04:59:59.6012478Z Metadata: read
+checkin	Set up job	2026-09-19T04:59:59.6013280Z Packages: read
+checkin	Set up job	2026-09-19T04:59:59.6013915Z ##[endgroup]
+checkin	Set up job	2026-09-19T04:59:59.6016120Z Secret source: Actions
+checkin	Set up job	2026-09-19T04:59:59.6017130Z Cache mode: write
+checkin	Set up job	2026-09-19T04:59:59.6018075Z Prepare workflow directory
+checkin	Set up job	2026-09-19T04:59:59.6570743Z Prepare all required actions
+checkin	Set up job	2026-09-19T04:59:59.6618195Z Getting action download info
+checkin	Set up job	2026-09-19T05:00:00.0282373Z Download action repository 'actions/checkout@v6' (SHA:d23441a48e516b6c34aea4fa41551a30e30af803)
+checkin	Set up job	2026-09-19T05:00:00.1446296Z Download action repository 'astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b' (SHA:08807647e7069bb48b6ef5acd8ec9567f424441b)
+checkin	Set up job	2026-09-19T05:00:00.6166897Z Download action repository 'actions/setup-python@v6' (SHA:ece7cb06caefa5fff74198d8649806c4678c61a1)
+checkin	Set up job	2026-09-19T05:00:00.6923017Z Download action repository 'actions/cache@v5' (SHA:caa296126883cff596d87d8935842f9db880ef25)
+checkin	Set up job	2026-09-19T05:00:00.8508590Z Download action repository 'actions/upload-artifact@v4' (SHA:ea165f8d65b6e75b540449e92b4886f43607fa02)
+checkin	Set up job	2026-09-19T05:00:01.0777450Z Complete job name: checkin
+checkin	Run actions/checkout@v6	﻿2026-09-19T05:00:01.1621560Z ##[group]Run actions/checkout@v6
+checkin	Run actions/checkout@v6	2026-09-19T05:00:01.1622689Z with:
+checkin	Run actions/checkout@v6	2026-09-19T05:00:01.1623219Z   repository: petersb888/anyrouter-checkin
+checkin	Run actions/checkout@v6	2026-09-19T05:00:01.1627020Z   token: ***
+checkin	Run actions/checkout@v6	2026-09-19T05:00:01.1627512Z   ssh-strict: true
+checkin	Run actions/checkout@v6	2026-09-19T05:00:01.1627986Z   ssh-user: git
+checkin	Run actions/checkout@v6	2026-09-19T05:00:01.1628484Z   persist-credentials: true
+checkin	Run actions/checkout@v6	2026-09-19T05:00:01.1629009Z   clean: true
+checkin	Run actions/checkout@v6	2026-09-19T05:00:01.1629499Z   sparse-checkout-cone-mode: true
+checkin	Run actions/checkout@v6	2026-09-19T05:00:01.1630080Z   fetch-depth: 1
+checkin	Run actions/checkout@v6	2026-09-19T05:00:01.1630552Z   fetch-tags: false
+checkin	Run actions/checkout@v6	2026-09-19T05:00:01.1631239Z   show-progress: true
+checkin	Run actions/checkout@v6	2026-09-19T05:00:01.1631749Z   lfs: false
+checkin	Run actions/checkout@v6	2026-09-19T05:00:01.1632237Z   submodules: false
+checkin	Run actions/checkout@v6	2026-09-19T05:00:01.1632727Z   set-safe-directory: true
+checkin	Run actions/checkout@v6	2026-09-19T05:00:01.1633283Z   allow-unsafe-pr-checkout: false
+checkin	Run actions/checkout@v6	2026-09-19T05:00:01.1634109Z env:
+checkin	Run actions/checkout@v6	2026-09-19T05:00:01.1634595Z   PYTHONIOENCODING: utf-8
+checkin	Run actions/checkout@v6	2026-09-19T05:00:01.1635142Z   PYTHONUNBUFFERED: 1
+checkin	Run actions/checkout@v6	2026-09-19T05:00:01.1635640Z   DEBUG_MODE: false
+checkin	Run actions/checkout@v6	2026-09-19T05:00:01.1636123Z   CHECKIN_TARGET: all
+checkin	Run actions/checkout@v6	2026-09-19T05:00:01.1636657Z ##[endgroup]
+checkin	Run actions/checkout@v6	2026-09-19T05:00:01.2662977Z Syncing repository: petersb888/anyrouter-checkin
+checkin	Run actions/checkout@v6	2026-09-19T05:00:01.2666108Z ##[group]Getting Git version info
+checkin	Run actions/checkout@v6	2026-09-19T05:00:01.2667685Z Working directory is '/home/runner/work/anyrouter-checkin/anyrouter-checkin'
+checkin	Run actions/checkout@v6	2026-09-19T05:00:01.2669793Z [command]/usr/bin/git version
+checkin	Run actions/checkout@v6	2026-09-19T05:00:01.2723574Z git version 2.55.0
+checkin	Run actions/checkout@v6	2026-09-19T05:00:01.2747168Z ##[endgroup]
+checkin	Run actions/checkout@v6	2026-09-19T05:00:01.2765467Z Temporarily overriding HOME='/home/runner/work/_temp/6e8e0db6-2b92-47d8-9c39-3f04292a20c4' before making global git config changes
+checkin	Run actions/checkout@v6	2026-09-19T05:00:01.2768309Z Adding repository directory to the temporary git global config as a safe directory
+checkin	Run actions/checkout@v6	2026-09-19T05:00:01.2772644Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/anyrouter-checkin/anyrouter-checkin
+checkin	Run actions/checkout@v6	2026-09-19T05:00:01.2826457Z Deleting the contents of '/home/runner/work/anyrouter-checkin/anyrouter-checkin'
+checkin	Run actions/checkout@v6	2026-09-19T05:00:01.2830779Z ##[group]Determining repository object format
+checkin	Run actions/checkout@v6	2026-09-19T05:00:01.2833492Z ##[endgroup]
+checkin	Run actions/checkout@v6	2026-09-19T05:00:01.2834772Z ##[group]Initializing the repository
+checkin	Run actions/checkout@v6	2026-09-19T05:00:01.2838522Z [command]/usr/bin/git init /home/runner/work/anyrouter-checkin/anyrouter-checkin
+checkin	Run actions/checkout@v6	2026-09-19T05:00:01.2962769Z hint: Using 'master' as the name for the initial branch. This default branch name
+checkin	Run actions/checkout@v6	2026-09-19T05:00:01.2967067Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+checkin	Run actions/checkout@v6	2026-09-19T05:00:01.2968728Z hint: to use in all of your new repositories, which will suppress this warning,
+checkin	Run actions/checkout@v6	2026-09-19T05:00:01.2970006Z hint: call:
+checkin	Run actions/checkout@v6	2026-09-19T05:00:01.2970758Z hint:
+checkin	Run actions/checkout@v6	2026-09-19T05:00:01.2971927Z hint: 	git config --global init.defaultBranch <name>
+checkin	Run actions/checkout@v6	2026-09-19T05:00:01.2973046Z hint:
+checkin	Run actions/checkout@v6	2026-09-19T05:00:01.2974090Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+checkin	Run actions/checkout@v6	2026-09-19T05:00:01.2975684Z hint: 'development'. The just-created branch can be renamed via this command:
+checkin	Run actions/checkout@v6	2026-09-19T05:00:01.2977001Z hint:
+checkin	Run actions/checkout@v6	2026-09-19T05:00:01.2977774Z hint: 	git branch -m <name>
+checkin	Run actions/checkout@v6	2026-09-19T05:00:01.2978677Z hint:
+checkin	Run actions/checkout@v6	2026-09-19T05:00:01.2979841Z hint: Disable this message with "git config set advice.defaultBranchName false"
+checkin	Run actions/checkout@v6	2026-09-19T05:00:01.2981944Z Initialized empty Git repository in /home/runner/work/anyrouter-checkin/anyrouter-checkin/.git/
+checkin	Run actions/checkout@v6	2026-09-19T05:00:01.2985151Z [command]/usr/bin/git remote add origin https://github.com/petersb888/anyrouter-checkin
+checkin	Run actions/checkout@v6	2026-09-19T05:00:01.3034171Z ##[endgroup]
+checkin	Run actions/checkout@v6	2026-09-19T05:00:01.3035082Z ##[group]Disabling automatic garbage collection
+checkin	Run actions/checkout@v6	2026-09-19T05:00:01.3037474Z [command]/usr/bin/git config --local gc.auto 0
+checkin	Run actions/checkout@v6	2026-09-19T05:00:01.3073542Z ##[endgroup]
+checkin	Run actions/checkout@v6	2026-09-19T05:00:01.3074736Z ##[group]Setting up auth
+checkin	Run actions/checkout@v6	2026-09-19T05:00:01.3075477Z Removing SSH command configuration
+checkin	Run actions/checkout@v6	2026-09-19T05:00:01.3082661Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+checkin	Run actions/checkout@v6	2026-09-19T05:00:01.3117182Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+checkin	Run actions/checkout@v6	2026-09-19T05:00:01.3519185Z Removing HTTP extra header
+checkin	Run actions/checkout@v6	2026-09-19T05:00:01.3527450Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+checkin	Run actions/checkout@v6	2026-09-19T05:00:01.3569046Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+checkin	Run actions/checkout@v6	2026-09-19T05:00:01.3797331Z Removing includeIf entries pointing to credentials config files
+checkin	Run actions/checkout@v6	2026-09-19T05:00:01.3805702Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+checkin	Run actions/checkout@v6	2026-09-19T05:00:01.3843634Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+checkin	Run actions/checkout@v6	2026-09-19T05:00:01.4076969Z [command]/usr/bin/git config --file /home/runner/work/_temp/git-credentials-addf24c6-14d5-4ab9-b119-4d9ab1fdb00d.config http.https://github.com/.extraheader AUTHORIZATION: basic ***
+checkin	Run actions/checkout@v6	2026-09-19T05:00:01.4119728Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/anyrouter-checkin/anyrouter-checkin/.git.path /home/runner/work/_temp/git-credentials-addf24c6-14d5-4ab9-b119-4d9ab1fdb00d.config
+checkin	Run actions/checkout@v6	2026-09-19T05:00:01.4154436Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/anyrouter-checkin/anyrouter-checkin/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-addf24c6-14d5-4ab9-b119-4d9ab1fdb00d.config
+checkin	Run actions/checkout@v6	2026-09-19T05:00:01.4193040Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-addf24c6-14d5-4ab9-b119-4d9ab1fdb00d.config
+checkin	Run actions/checkout@v6	2026-09-19T05:00:01.4236577Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-addf24c6-14d5-4ab9-b119-4d9ab1fdb00d.config
+checkin	Run actions/checkout@v6	2026-09-19T05:00:01.4267453Z ##[endgroup]
+checkin	Run actions/checkout@v6	2026-09-19T05:00:01.4268400Z ##[group]Fetching the repository
+checkin	Run actions/checkout@v6	2026-09-19T05:00:01.4276181Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +f46355123eb034b8017d5435cb64e5122181d78f:refs/remotes/origin/main
+checkin	Run actions/checkout@v6	2026-09-19T05:00:01.9520000Z From https://github.com/petersb888/anyrouter-checkin
+checkin	Run actions/checkout@v6	2026-09-19T05:00:01.9522791Z  * [new ref]         f46355123eb034b8017d5435cb64e5122181d78f -> origin/main
+checkin	Run actions/checkout@v6	2026-09-19T05:00:01.9530877Z [command]/usr/bin/git branch --list --remote origin/main
+checkin	Run actions/checkout@v6	2026-09-19T05:00:01.9559684Z   origin/main
+checkin	Run actions/checkout@v6	2026-09-19T05:00:01.9571758Z [command]/usr/bin/git rev-parse refs/remotes/origin/main
+checkin	Run actions/checkout@v6	2026-09-19T05:00:01.9600009Z f46355123eb034b8017d5435cb64e5122181d78f
+checkin	Run actions/checkout@v6	2026-09-19T05:00:01.9606921Z ##[endgroup]
+checkin	Run actions/checkout@v6	2026-09-19T05:00:01.9608478Z ##[group]Determining the checkout info
+checkin	Run actions/checkout@v6	2026-09-19T05:00:01.9610108Z ##[endgroup]
+checkin	Run actions/checkout@v6	2026-09-19T05:00:01.9614639Z [command]/usr/bin/git sparse-checkout disable
+checkin	Run actions/checkout@v6	2026-09-19T05:00:01.9669628Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+checkin	Run actions/checkout@v6	2026-09-19T05:00:01.9704547Z ##[group]Checking out the ref
+checkin	Run actions/checkout@v6	2026-09-19T05:00:01.9707151Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
+checkin	Run actions/checkout@v6	2026-09-19T05:00:01.9905366Z Switched to a new branch 'main'
+checkin	Run actions/checkout@v6	2026-09-19T05:00:01.9911781Z branch 'main' set up to track 'origin/main'.
+checkin	Run actions/checkout@v6	2026-09-19T05:00:01.9920073Z ##[endgroup]
+checkin	Run actions/checkout@v6	2026-09-19T05:00:01.9962532Z [command]/usr/bin/git log -1 --format=%H
+checkin	Run actions/checkout@v6	2026-09-19T05:00:01.9990459Z f46355123eb034b8017d5435cb64e5122181d78f
+checkin	Run astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b	﻿2026-09-19T05:00:02.0430370Z ##[group]Run astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b
+checkin	Run astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b	2026-09-19T05:00:02.0432379Z with:
+checkin	Run astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b	2026-09-19T05:00:02.0433351Z   version: latest
+checkin	Run astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b	2026-09-19T05:00:02.0434412Z   activate-environment: false
+checkin	Run astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b	2026-09-19T05:00:02.0435598Z   no-project: false
+checkin	Run astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b	2026-09-19T05:00:02.0437129Z   working-directory: /home/runner/work/anyrouter-checkin/anyrouter-checkin
+checkin	Run astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b	2026-09-19T05:00:02.0447863Z   github-token: ***
+checkin	Run astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b	2026-09-19T05:00:02.0448942Z   enable-cache: auto
+checkin	Run astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b	2026-09-19T05:00:02.0451623Z   cache-dependency-glob: **/*requirements*.txt
+checkin	Run astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b	**/*requirements*.in
+checkin	Run astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b	**/*constraints*.txt
+checkin	Run astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b	**/*constraints*.in
+checkin	Run astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b	**/pyproject.toml
+checkin	Run astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b	**/uv.lock
+checkin	Run astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b	**/*.py.lock
+checkin	Run astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b	
+checkin	Run astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b	2026-09-19T05:00:02.0454444Z   restore-cache: true
+checkin	Run astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b	2026-09-19T05:00:02.0455522Z   save-cache: true
+checkin	Run astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b	2026-09-19T05:00:02.0456555Z   prune-cache: true
+checkin	Run astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b	2026-09-19T05:00:02.0457597Z   cache-python: false
+checkin	Run astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b	2026-09-19T05:00:02.0458717Z   ignore-nothing-to-cache: false
+checkin	Run astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b	2026-09-19T05:00:02.0459970Z   ignore-empty-workdir: false
+checkin	Run astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b	2026-09-19T05:00:02.0461307Z   add-problem-matchers: true
+checkin	Run astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b	2026-09-19T05:00:02.0462567Z   resolution-strategy: highest
+checkin	Run astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b	2026-09-19T05:00:02.0463730Z env:
+checkin	Run astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b	2026-09-19T05:00:02.0464680Z   PYTHONIOENCODING: utf-8
+checkin	Run astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b	2026-09-19T05:00:02.0465823Z   PYTHONUNBUFFERED: 1
+checkin	Run astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b	2026-09-19T05:00:02.0466894Z   DEBUG_MODE: false
+checkin	Run astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b	2026-09-19T05:00:02.0467913Z   CHECKIN_TARGET: all
+checkin	Run astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b	2026-09-19T05:00:02.0468961Z ##[endgroup]
+checkin	Run astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b	2026-09-19T05:00:02.2254010Z Fetching manifest data from https://raw.githubusercontent.com/astral-sh/versions/main/v1/uv.ndjson ...
+checkin	Run astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b	2026-09-19T05:00:02.3064366Z Downloading uv from "https://releases.astral.sh/github/uv/releases/download/0.12.17/uv-x86_64-unknown-linux-gnu.tar.gz" ...
+checkin	Run astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b	2026-09-19T05:00:02.4572393Z [command]/usr/bin/tar xz --warning=no-unknown-keyword --overwrite -C /home/runner/work/_temp/0bf9b663-14c0-4180-bb1e-70ee2e37b51c -f /home/runner/work/_temp/25e89ae6-31fe-4ff7-9228-91f9d00b106c
+checkin	Run astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b	2026-09-19T05:00:02.8436958Z Added /home/runner/.local/bin to the path
+checkin	Run astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b	2026-09-19T05:00:02.8441793Z Added /opt/hostedtoolcache/uv/0.12.17/x86_64 to the path
+checkin	Run astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b	2026-09-19T05:00:02.8445015Z Set UV_PYTHON_INSTALL_DIR to /home/runner/work/_temp/uv-python-dir
+checkin	Run astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b	2026-09-19T05:00:02.8448167Z Added /home/runner/work/_temp/uv-python-dir to the path
+checkin	Run astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b	2026-09-19T05:00:02.8511918Z Set UV_CACHE_DIR to /home/runner/work/_temp/setup-uv-cache
+checkin	Run astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b	2026-09-19T05:00:02.8514382Z Successfully installed uv version 0.12.17
+checkin	Run astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b	2026-09-19T05:00:02.9435529Z Searching files using cache dependency glob: /home/runner/work/anyrouter-checkin/anyrouter-checkin/**/*requirements*.txt,/home/runner/work/anyrouter-checkin/anyrouter-checkin/**/*requirements*.in,/home/runner/work/anyrouter-checkin/anyrouter-checkin/**/*constraints*.txt,/home/runner/work/anyrouter-checkin/anyrouter-checkin/**/*constraints*.in,/home/runner/work/anyrouter-checkin/anyrouter-checkin/**/pyproject.toml,/home/runner/work/anyrouter-checkin/anyrouter-checkin/**/uv.lock,/home/runner/work/anyrouter-checkin/anyrouter-checkin/**/*.py.lock
+checkin	Run astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b	2026-09-19T05:00:03.0054149Z /home/runner/work/anyrouter-checkin/anyrouter-checkin/pyproject.toml
+checkin	Run astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b	2026-09-19T05:00:03.0117029Z /home/runner/work/anyrouter-checkin/anyrouter-checkin/uv.lock
+checkin	Run astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b	2026-09-19T05:00:03.0126707Z Found 2 files to hash.
+checkin	Run astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b	2026-09-19T05:00:03.0210900Z Trying to restore cache from GitHub Actions cache with key: setup-uv-2-x86_64-unknown-linux-gnu-ubuntu-24.04-unknown-pruned-b78d1ace7413ed87b64b92afb1993e19baa00886a0fb938c2c36192712a35826
+checkin	Run astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b	2026-09-19T05:00:03.3492025Z Cache hit for: setup-uv-2-x86_64-unknown-linux-gnu-ubuntu-24.04-unknown-pruned-b78d1ace7413ed87b64b92afb1993e19baa00886a0fb938c2c36192712a35826
+checkin	Run astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b	2026-09-19T05:00:03.9328790Z Received 1668 of 1668 (100.0%), 0.0 MBs/sec
+checkin	Run astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b	2026-09-19T05:00:03.9329858Z Cache Size: ~0 MB (1668 B)
+checkin	Run astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b	2026-09-19T05:00:03.9359708Z [command]/usr/bin/tar -xf /home/runner/work/_temp/63fb2b31-9244-478d-ad70-9b01cdfb6035/cache.tzst -P -C /home/runner/work/anyrouter-checkin/anyrouter-checkin --use-compress-program unzstd
+checkin	Run astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b	2026-09-19T05:00:03.9435580Z Cache restored successfully
+checkin	Run astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b	2026-09-19T05:00:03.9439737Z cache restored from GitHub Actions cache with key: setup-uv-2-x86_64-unknown-linux-gnu-ubuntu-24.04-unknown-pruned-b78d1ace7413ed87b64b92afb1993e19baa00886a0fb938c2c36192712a35826
+checkin	Run actions/setup-python@v6	﻿2026-09-19T05:00:04.0131922Z ##[group]Run actions/setup-python@v6
+checkin	Run actions/setup-python@v6	2026-09-19T05:00:04.0132298Z with:
+checkin	Run actions/setup-python@v6	2026-09-19T05:00:04.0132530Z   python-version: 3.11
+checkin	Run actions/setup-python@v6	2026-09-19T05:00:04.0132787Z   check-latest: false
+checkin	Run actions/setup-python@v6	2026-09-19T05:00:04.0135120Z   token: ***
+checkin	Run actions/setup-python@v6	2026-09-19T05:00:04.0135376Z   update-environment: true
+checkin	Run actions/setup-python@v6	2026-09-19T05:00:04.0135658Z   allow-prereleases: false
+checkin	Run actions/setup-python@v6	2026-09-19T05:00:04.0135933Z   freethreaded: false
+checkin	Run actions/setup-python@v6	2026-09-19T05:00:04.0136178Z env:
+checkin	Run actions/setup-python@v6	2026-09-19T05:00:04.0136403Z   PYTHONIOENCODING: utf-8
+checkin	Run actions/setup-python@v6	2026-09-19T05:00:04.0136699Z   PYTHONUNBUFFERED: 1
+checkin	Run actions/setup-python@v6	2026-09-19T05:00:04.0136949Z   DEBUG_MODE: false
+checkin	Run actions/setup-python@v6	2026-09-19T05:00:04.0137178Z   CHECKIN_TARGET: all
+checkin	Run actions/setup-python@v6	2026-09-19T05:00:04.0137522Z   UV_PYTHON_INSTALL_DIR: /home/runner/work/_temp/uv-python-dir
+checkin	Run actions/setup-python@v6	2026-09-19T05:00:04.0137944Z   UV_CACHE_DIR: /home/runner/work/_temp/setup-uv-cache
+checkin	Run actions/setup-python@v6	2026-09-19T05:00:04.0138272Z ##[endgroup]
+checkin	Run actions/setup-python@v6	2026-09-19T05:00:04.1413433Z ##[group]Installed versions
+checkin	Run actions/setup-python@v6	2026-09-19T05:00:04.1509528Z Successfully set up CPython (3.11.16)
+checkin	Run actions/setup-python@v6	2026-09-19T05:00:04.1510414Z ##[endgroup]
+checkin	缓存 UV 依赖	﻿2026-09-19T05:00:04.2318604Z ##[group]Run actions/cache@v5
+checkin	缓存 UV 依赖	2026-09-19T05:00:04.2318958Z with:
+checkin	缓存 UV 依赖	2026-09-19T05:00:04.2319220Z   path: ~/.cache/uv
+checkin	缓存 UV 依赖	2026-09-19T05:00:04.2319671Z   key: Linux-uv-b78d1ace7413ed87b64b92afb1993e19baa00886a0fb938c2c36192712a35826
+checkin	缓存 UV 依赖	2026-09-19T05:00:04.2320199Z   restore-keys: Linux-uv-
+checkin	缓存 UV 依赖	
+checkin	缓存 UV 依赖	2026-09-19T05:00:04.2320542Z   enableCrossOsArchive: false
+checkin	缓存 UV 依赖	2026-09-19T05:00:04.2320893Z   fail-on-cache-miss: false
+checkin	缓存 UV 依赖	2026-09-19T05:00:04.2321695Z   lookup-only: false
+checkin	缓存 UV 依赖	2026-09-19T05:00:04.2321985Z   save-always: false
+checkin	缓存 UV 依赖	2026-09-19T05:00:04.2322238Z env:
+checkin	缓存 UV 依赖	2026-09-19T05:00:04.2322486Z   PYTHONIOENCODING: utf-8
+checkin	缓存 UV 依赖	2026-09-19T05:00:04.2322779Z   PYTHONUNBUFFERED: 1
+checkin	缓存 UV 依赖	2026-09-19T05:00:04.2323041Z   DEBUG_MODE: false
+checkin	缓存 UV 依赖	2026-09-19T05:00:04.2323300Z   CHECKIN_TARGET: all
+checkin	缓存 UV 依赖	2026-09-19T05:00:04.2323678Z   UV_PYTHON_INSTALL_DIR: /home/runner/work/_temp/uv-python-dir
+checkin	缓存 UV 依赖	2026-09-19T05:00:04.2324141Z   UV_CACHE_DIR: /home/runner/work/_temp/setup-uv-cache
+checkin	缓存 UV 依赖	2026-09-19T05:00:04.2324601Z   pythonLocation: /opt/hostedtoolcache/Python/3.11.16/x64
+checkin	缓存 UV 依赖	2026-09-19T05:00:04.2325396Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.11.16/x64/lib/pkgconfig
+checkin	缓存 UV 依赖	2026-09-19T05:00:04.2325945Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.16/x64
+checkin	缓存 UV 依赖	2026-09-19T05:00:04.2326414Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.16/x64
+checkin	缓存 UV 依赖	2026-09-19T05:00:04.2326881Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.16/x64
+checkin	缓存 UV 依赖	2026-09-19T05:00:04.2327348Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.11.16/x64/lib
+checkin	缓存 UV 依赖	2026-09-19T05:00:04.2327753Z ##[endgroup]
+checkin	缓存 UV 依赖	2026-09-19T05:00:04.6087304Z Cache not found for input keys: Linux-uv-b78d1ace7413ed87b64b92afb1993e19baa00886a0fb938c2c36192712a35826, Linux-uv-
+checkin	安装依赖	﻿2026-09-19T05:00:04.6215095Z ##[group]Run uv sync --frozen
+checkin	安装依赖	2026-09-19T05:00:04.6215503Z ^[[36;1muv sync --frozen^[[0m
+checkin	安装依赖	2026-09-19T05:00:04.6215788Z ^[[36;1mecho "✅ 环境初始化完成"^[[0m
+checkin	安装依赖	2026-09-19T05:00:04.6266792Z shell: /usr/bin/bash -e {0}
+checkin	安装依赖	2026-09-19T05:00:04.6267093Z env:
+checkin	安装依赖	2026-09-19T05:00:04.6267328Z   PYTHONIOENCODING: utf-8
+checkin	安装依赖	2026-09-19T05:00:04.6267600Z   PYTHONUNBUFFERED: 1
+checkin	安装依赖	2026-09-19T05:00:04.6267873Z   DEBUG_MODE: false
+checkin	安装依赖	2026-09-19T05:00:04.6268105Z   CHECKIN_TARGET: all
+checkin	安装依赖	2026-09-19T05:00:04.6268432Z   UV_PYTHON_INSTALL_DIR: /home/runner/work/_temp/uv-python-dir
+checkin	安装依赖	2026-09-19T05:00:04.6268841Z   UV_CACHE_DIR: /home/runner/work/_temp/setup-uv-cache
+checkin	安装依赖	2026-09-19T05:00:04.6269240Z   pythonLocation: /opt/hostedtoolcache/Python/3.11.16/x64
+checkin	安装依赖	2026-09-19T05:00:04.6269692Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.11.16/x64/lib/pkgconfig
+checkin	安装依赖	2026-09-19T05:00:04.6270141Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.16/x64
+checkin	安装依赖	2026-09-19T05:00:04.6270540Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.16/x64
+checkin	安装依赖	2026-09-19T05:00:04.6271267Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.16/x64
+checkin	安装依赖	2026-09-19T05:00:04.6271846Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.11.16/x64/lib
+checkin	安装依赖	2026-09-19T05:00:04.6272219Z ##[endgroup]
+checkin	安装依赖	2026-09-19T05:00:04.7238341Z Using CPython 3.11.16 interpreter at: /opt/hostedtoolcache/Python/3.11.16/x64/bin/python3.11
+checkin	安装依赖	2026-09-19T05:00:04.8093664Z Creating virtual environment at: .venv
+checkin	安装依赖	2026-09-19T05:00:04.8094432Z Downloading pygments (1.2MiB)
+checkin	安装依赖	2026-09-19T05:00:04.8099088Z Downloading ruff (12.6MiB)
+checkin	安装依赖	2026-09-19T05:00:04.8102187Z Downloading virtualenv (5.7MiB)
+checkin	安装依赖	2026-09-19T05:00:04.8116702Z Downloading mypy (12.8MiB)
+checkin	安装依赖	2026-09-19T05:00:04.8120999Z Downloading playwright (43.8MiB)
+checkin	安装依赖	2026-09-19T05:00:04.9220558Z  Downloaded pygments
+checkin	安装依赖	2026-09-19T05:00:04.9919949Z  Downloaded virtualenv
+checkin	安装依赖	2026-09-19T05:00:05.0070355Z  Downloaded ruff
+checkin	安装依赖	2026-09-19T05:00:05.1633692Z  Downloaded mypy
+checkin	安装依赖	2026-09-19T05:00:05.5777184Z  Downloaded playwright
+checkin	安装依赖	2026-09-19T05:00:05.5780646Z Prepared 44 packages in 851ms
+checkin	安装依赖	2026-09-19T05:00:05.6531729Z Installed 44 packages in 73ms
+checkin	安装依赖	2026-09-19T05:00:05.6532918Z  + anyio==4.10.0
+checkin	安装依赖	2026-09-19T05:00:05.6533564Z  + bandit==1.9.3
+checkin	安装依赖	2026-09-19T05:00:05.6534192Z  + certifi==2025.8.3
+checkin	安装依赖	2026-09-19T05:00:05.6534806Z  + cfgv==3.4.0
+checkin	安装依赖	2026-09-19T05:00:05.6535405Z  + cloakbrowser==0.3.31
+checkin	安装依赖	2026-09-19T05:00:05.6536058Z  + coverage==7.10.5
+checkin	安装依赖	2026-09-19T05:00:05.6536645Z  + distlib==0.4.0
+checkin	安装依赖	2026-09-19T05:00:05.6537249Z  + filelock==3.19.1
+checkin	安装依赖	2026-09-19T05:00:05.6537825Z  + greenlet==3.2.4
+checkin	安装依赖	2026-09-19T05:00:05.6538366Z  + h11==0.16.0
+checkin	安装依赖	2026-09-19T05:00:05.6538881Z  + h2==4.3.0
+checkin	安装依赖	2026-09-19T05:00:05.6539396Z  + hpack==4.1.0
+checkin	安装依赖	2026-09-19T05:00:05.6540013Z  + httpcore==1.0.9
+checkin	安装依赖	2026-09-19T05:00:05.6540727Z  + httpx==0.28.1
+checkin	安装依赖	2026-09-19T05:00:05.6541602Z  + hyperframe==6.1.0
+checkin	安装依赖	2026-09-19T05:00:05.6544138Z  + identify==2.6.13
+checkin	安装依赖	2026-09-19T05:00:05.6544798Z  + idna==3.10
+checkin	安装依赖	2026-09-19T05:00:05.6545443Z  + iniconfig==2.1.0
+checkin	安装依赖	2026-09-19T05:00:05.6546115Z  + librt==0.8.1
+checkin	安装依赖	2026-09-19T05:00:05.6546735Z  + markdown-it-py==4.0.0
+checkin	安装依赖	2026-09-19T05:00:05.6547476Z  + mdurl==0.1.2
+checkin	安装依赖	2026-09-19T05:00:05.6548081Z  + mypy==1.19.1
+checkin	安装依赖	2026-09-19T05:00:05.6548692Z  + mypy-extensions==1.1.0
+checkin	安装依赖	2026-09-19T05:00:05.6549413Z  + nodeenv==1.9.1
+checkin	安装依赖	2026-09-19T05:00:05.6550103Z  + packaging==25.0
+checkin	安装依赖	2026-09-19T05:00:05.6550761Z  + pathspec==1.0.4
+checkin	安装依赖	2026-09-19T05:00:05.6551675Z  + platformdirs==4.4.0
+checkin	安装依赖	2026-09-19T05:00:05.6552318Z  + playwright==1.55.0
+checkin	安装依赖	2026-09-19T05:00:05.6553787Z  + pluggy==1.6.0
+checkin	安装依赖	2026-09-19T05:00:05.6555085Z  + pre-commit==4.3.0
+checkin	安装依赖	2026-09-19T05:00:05.6555778Z  + pyee==13.0.0
+checkin	安装依赖	2026-09-19T05:00:05.6556403Z  + pygments==2.19.2
+checkin	安装依赖	2026-09-19T05:00:05.6557066Z  + pytest==8.4.1
+checkin	安装依赖	2026-09-19T05:00:05.6557745Z  + pytest-asyncio==1.3.0
+checkin	安装依赖	2026-09-19T05:00:05.6558458Z  + pytest-cov==6.2.1
+checkin	安装依赖	2026-09-19T05:00:05.6559087Z  + pytest-mock==3.14.1
+checkin	安装依赖	2026-09-19T05:00:05.6559748Z  + python-dotenv==1.1.1
+checkin	安装依赖	2026-09-19T05:00:05.6560378Z  + pyyaml==6.0.2
+checkin	安装依赖	2026-09-19T05:00:05.6561224Z  + rich==14.3.3
+checkin	安装依赖	2026-09-19T05:00:05.6561860Z  + ruff==0.12.11
+checkin	安装依赖	2026-09-19T05:00:05.6562557Z  + sniffio==1.3.1
+checkin	安装依赖	2026-09-19T05:00:05.6563204Z  + stevedore==5.7.0
+checkin	安装依赖	2026-09-19T05:00:05.6564275Z  + typing-extensions==4.15.0
+checkin	安装依赖	2026-09-19T05:00:05.6564977Z  + virtualenv==20.34.0
+checkin	安装依赖	2026-09-19T05:00:05.6643313Z ✅ 环境初始化完成
+checkin	安装系统依赖	﻿2026-09-19T05:00:05.6677259Z ##[group]Run sudo apt-get update
+checkin	安装系统依赖	2026-09-19T05:00:05.6677619Z ^[[36;1msudo apt-get update^[[0m
+checkin	安装系统依赖	2026-09-19T05:00:05.6678131Z ^[[36;1msudo apt-get install -y xvfb fonts-noto-color-emoji fonts-freefont-ttf fonts-unifont \^[[0m
+checkin	安装系统依赖	2026-09-19T05:00:05.6678764Z ^[[36;1m  fonts-ipafont-gothic fonts-wqy-zenhei fonts-tlwg-loma-otf^[[0m
+checkin	安装系统依赖	2026-09-19T05:00:05.6717282Z shell: /usr/bin/bash -e {0}
+checkin	安装系统依赖	2026-09-19T05:00:05.6717561Z env:
+checkin	安装系统依赖	2026-09-19T05:00:05.6717790Z   PYTHONIOENCODING: utf-8
+checkin	安装系统依赖	2026-09-19T05:00:05.6718063Z   PYTHONUNBUFFERED: 1
+checkin	安装系统依赖	2026-09-19T05:00:05.6718308Z   DEBUG_MODE: false
+checkin	安装系统依赖	2026-09-19T05:00:05.6718544Z   CHECKIN_TARGET: all
+checkin	安装系统依赖	2026-09-19T05:00:05.6718861Z   UV_PYTHON_INSTALL_DIR: /home/runner/work/_temp/uv-python-dir
+checkin	安装系统依赖	2026-09-19T05:00:05.6719275Z   UV_CACHE_DIR: /home/runner/work/_temp/setup-uv-cache
+checkin	安装系统依赖	2026-09-19T05:00:05.6719669Z   pythonLocation: /opt/hostedtoolcache/Python/3.11.16/x64
+checkin	安装系统依赖	2026-09-19T05:00:05.6720119Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.11.16/x64/lib/pkgconfig
+checkin	安装系统依赖	2026-09-19T05:00:05.6720592Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.16/x64
+checkin	安装系统依赖	2026-09-19T05:00:05.6721289Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.16/x64
+checkin	安装系统依赖	2026-09-19T05:00:05.6721713Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.16/x64
+checkin	安装系统依赖	2026-09-19T05:00:05.6722209Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.11.16/x64/lib
+checkin	安装系统依赖	2026-09-19T05:00:05.6722585Z ##[endgroup]
+checkin	安装系统依赖	2026-09-19T05:00:05.8420240Z Get:1 file:/etc/apt/apt-mirrors.txt Mirrorlist [144 B]
+checkin	安装系统依赖	2026-09-19T05:00:05.8564064Z Get:6 https://packages.microsoft.com/ubuntu/24.04/prod noble InRelease [3600 B]
+checkin	安装系统依赖	2026-09-19T05:00:05.9040345Z Hit:2 http://azure.archive.ubuntu.com/ubuntu noble InRelease
+checkin	安装系统依赖	2026-09-19T05:00:05.9071975Z Get:3 http://azure.archive.ubuntu.com/ubuntu noble-updates InRelease [126 kB]
+checkin	安装系统依赖	2026-09-19T05:00:05.9149394Z Get:4 http://azure.archive.ubuntu.com/ubuntu noble-backports InRelease [126 kB]
+checkin	安装系统依赖	2026-09-19T05:00:05.9283434Z Get:5 http://azure.archive.ubuntu.com/ubuntu noble-security InRelease [126 kB]
+checkin	安装系统依赖	2026-09-19T05:00:06.0143937Z Get:7 https://dl.google.com/linux/chrome-stable/deb stable InRelease [2548 B]
+checkin	安装系统依赖	2026-09-19T05:00:06.0371500Z Get:8 https://packages.microsoft.com/ubuntu/24.04/prod noble/main amd64 Packages [478 kB]
+checkin	安装系统依赖	2026-09-19T05:00:06.0510394Z Get:9 https://packages.microsoft.com/ubuntu/24.04/prod noble/main arm64 Packages [429 kB]
+checkin	安装系统依赖	2026-09-19T05:00:06.1687670Z Get:10 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 Packages [1275 kB]
+checkin	安装系统依赖	2026-09-19T05:00:06.1773454Z Get:11 http://azure.archive.ubuntu.com/ubuntu noble-updates/main Translation-en [294 kB]
+checkin	安装系统依赖	2026-09-19T05:00:06.1784266Z Get:12 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 Components [180 kB]
+checkin	安装系统依赖	2026-09-19T05:00:06.1822433Z Get:13 http://azure.archive.ubuntu.com/ubuntu noble-updates/universe amd64 Packages [1689 kB]
+checkin	安装系统依赖	2026-09-19T05:00:06.2011488Z Get:14 http://azure.archive.ubuntu.com/ubuntu noble-updates/universe Translation-en [338 kB]
+checkin	安装系统依赖	2026-09-19T05:00:06.2021890Z Get:15 http://azure.archive.ubuntu.com/ubuntu noble-updates/universe amd64 Components [388 kB]
+checkin	安装系统依赖	2026-09-19T05:00:06.2046147Z Get:16 http://azure.archive.ubuntu.com/ubuntu noble-updates/restricted amd64 Packages [1580 kB]
+checkin	安装系统依赖	2026-09-19T05:00:06.2134772Z Get:17 http://azure.archive.ubuntu.com/ubuntu noble-updates/restricted Translation-en [359 kB]
+checkin	安装系统依赖	2026-09-19T05:00:06.2159294Z Get:18 http://azure.archive.ubuntu.com/ubuntu noble-updates/multiverse amd64 Packages [45.7 kB]
+checkin	安装系统依赖	2026-09-19T05:00:06.2180766Z Get:19 http://azure.archive.ubuntu.com/ubuntu noble-updates/multiverse Translation-en [13.1 kB]
+checkin	安装系统依赖	2026-09-19T05:00:06.2631532Z Get:20 http://azure.archive.ubuntu.com/ubuntu noble-updates/multiverse amd64 Components [940 B]
+checkin	安装系统依赖	2026-09-19T05:00:06.2686644Z Get:21 http://azure.archive.ubuntu.com/ubuntu noble-backports/main amd64 Packages [65.9 kB]
+checkin	安装系统依赖	2026-09-19T05:00:06.2711945Z Get:22 http://azure.archive.ubuntu.com/ubuntu noble-backports/main amd64 Components [5764 B]
+checkin	安装系统依赖	2026-09-19T05:00:06.2732314Z Get:23 http://azure.archive.ubuntu.com/ubuntu noble-backports/universe amd64 Packages [34.6 kB]
+checkin	安装系统依赖	2026-09-19T05:00:06.2742043Z Get:24 http://azure.archive.ubuntu.com/ubuntu noble-backports/universe Translation-en [18.7 kB]
+checkin	安装系统依赖	2026-09-19T05:00:06.2745716Z Get:25 http://azure.archive.ubuntu.com/ubuntu noble-backports/universe amd64 Components [12.6 kB]
+checkin	安装系统依赖	2026-09-19T05:00:06.3324025Z Get:26 http://azure.archive.ubuntu.com/ubuntu noble-security/main amd64 Packages [1009 kB]
+checkin	安装系统依赖	2026-09-19T05:00:06.3390715Z Get:27 http://azure.archive.ubuntu.com/ubuntu noble-security/main Translation-en [214 kB]
+checkin	安装系统依赖	2026-09-19T05:00:06.3398964Z Get:28 http://azure.archive.ubuntu.com/ubuntu noble-security/main amd64 Components [46.3 kB]
+checkin	安装系统依赖	2026-09-19T05:00:06.3424407Z Get:29 http://azure.archive.ubuntu.com/ubuntu noble-security/universe amd64 Packages [1208 kB]
+checkin	安装系统依赖	2026-09-19T05:00:06.3485005Z Get:30 http://azure.archive.ubuntu.com/ubuntu noble-security/universe Translation-en [243 kB]
+checkin	安装系统依赖	2026-09-19T05:00:06.3522224Z Get:31 http://azure.archive.ubuntu.com/ubuntu noble-security/universe amd64 Components [76.2 kB]
+checkin	安装系统依赖	2026-09-19T05:00:06.3552301Z Get:32 http://azure.archive.ubuntu.com/ubuntu noble-security/restricted amd64 Packages [1449 kB]
+checkin	安装系统依赖	2026-09-19T05:00:06.3602168Z Get:33 http://azure.archive.ubuntu.com/ubuntu noble-security/restricted Translation-en [336 kB]
+checkin	安装系统依赖	2026-09-19T05:00:06.4071928Z Get:34 http://azure.archive.ubuntu.com/ubuntu noble-security/multiverse Translation-en [11.3 kB]
+checkin	安装系统依赖	2026-09-19T05:00:06.4589797Z Get:35 https://dl.google.com/linux/chrome-stable/deb stable/main amd64 Packages [1408 B]
+checkin	安装系统依赖	2026-09-19T05:00:14.1695477Z Fetched 12.2 MB in 2s (7966 kB/s)
+checkin	安装系统依赖	2026-09-19T05:00:14.9711274Z Reading package lists...
+checkin	安装系统依赖	2026-09-19T05:00:15.0018190Z Reading package lists...
+checkin	安装系统依赖	2026-09-19T05:00:15.1749813Z Building dependency tree...
+checkin	安装系统依赖	2026-09-19T05:00:15.1757259Z Reading state information...
+checkin	安装系统依赖	2026-09-19T05:00:15.3486809Z xvfb is already the newest version (2:21.1.12-1ubuntu1.6).
+checkin	安装系统依赖	2026-09-19T05:00:15.3488068Z fonts-noto-color-emoji is already the newest version (2.047-0ubuntu0.24.04.1).
+checkin	安装系统依赖	2026-09-19T05:00:15.3489125Z The following NEW packages will be installed:
+checkin	安装系统依赖	2026-09-19T05:00:15.3490178Z   fonts-freefont-ttf fonts-ipafont-gothic fonts-ipafont-mincho fonts-tlwg-loma
+checkin	安装系统依赖	2026-09-19T05:00:15.3494704Z   fonts-tlwg-loma-otf fonts-unifont fonts-wqy-zenhei
+checkin	安装系统依赖	2026-09-19T05:00:15.3668082Z 0 upgraded, 7 newly installed, 0 to remove and 73 not upgraded.
+checkin	安装系统依赖	2026-09-19T05:00:15.3668579Z Need to get 24.5 MB of archives.
+checkin	安装系统依赖	2026-09-19T05:00:15.3668966Z After this operation, 93.7 MB of additional disk space will be used.
+checkin	安装系统依赖	2026-09-19T05:00:15.3669764Z Get:1 file:/etc/apt/apt-mirrors.txt Mirrorlist [144 B]
+checkin	安装系统依赖	2026-09-19T05:00:15.5813154Z Get:2 http://azure.archive.ubuntu.com/ubuntu noble/universe amd64 fonts-ipafont-gothic all 00303-21ubuntu1 [3513 kB]
+checkin	安装系统依赖	2026-09-19T05:00:15.7084445Z Get:3 http://azure.archive.ubuntu.com/ubuntu noble/universe amd64 fonts-ipafont-mincho all 00303-21ubuntu1 [4724 kB]
+checkin	安装系统依赖	2026-09-19T05:00:15.8580508Z Get:4 http://azure.archive.ubuntu.com/ubuntu noble/main amd64 fonts-freefont-ttf all 20211204+svn4273-2 [5641 kB]
+checkin	安装系统依赖	2026-09-19T05:00:16.0261933Z Get:5 http://azure.archive.ubuntu.com/ubuntu noble/universe amd64 fonts-tlwg-loma-otf all 1:0.7.3-1 [107 kB]
+checkin	安装系统依赖	2026-09-19T05:00:16.0871770Z Get:6 http://azure.archive.ubuntu.com/ubuntu noble/main amd64 fonts-tlwg-loma all 1:0.7.3-1 [4102 B]
+checkin	安装系统依赖	2026-09-19T05:00:16.1476443Z Get:7 http://azure.archive.ubuntu.com/ubuntu noble/universe amd64 fonts-unifont all 1:15.1.01-1build1 [2993 kB]
+checkin	安装系统依赖	2026-09-19T05:00:16.2640566Z Get:8 http://azure.archive.ubuntu.com/ubuntu noble/universe amd64 fonts-wqy-zenhei all 0.9.45-8 [7472 kB]
+checkin	安装系统依赖	2026-09-19T05:00:16.6804672Z Fetched 24.5 MB in 1s (23.3 MB/s)
+checkin	安装系统依赖	2026-09-19T05:00:16.7361379Z Selecting previously unselected package fonts-ipafont-gothic.
+checkin	安装系统依赖	2026-09-19T05:00:16.7821977Z (Reading database ... 
+checkin	安装系统依赖	2026-09-19T05:00:16.7822797Z (Reading database ... 5%
+checkin	安装系统依赖	2026-09-19T05:00:16.7823396Z (Reading database ... 10%
+checkin	安装系统依赖	2026-09-19T05:00:16.7823887Z (Reading database ... 15%
+checkin	安装系统依赖	2026-09-19T05:00:16.7824345Z (Reading database ... 20%
+checkin	安装系统依赖	2026-09-19T05:00:16.7824669Z (Reading database ... 25%
+checkin	安装系统依赖	2026-09-19T05:00:16.7824968Z (Reading database ... 30%
+checkin	安装系统依赖	2026-09-19T05:00:16.7825257Z (Reading database ... 35%
+checkin	安装系统依赖	2026-09-19T05:00:16.7825785Z (Reading database ... 40%
+checkin	安装系统依赖	2026-09-19T05:00:16.7826084Z (Reading database ... 45%
+checkin	安装系统依赖	2026-09-19T05:00:16.7826374Z (Reading database ... 50%
+checkin	安装系统依赖	2026-09-19T05:00:16.8046520Z (Reading database ... 55%
+checkin	安装系统依赖	2026-09-19T05:00:17.1789977Z (Reading database ... 60%
+checkin	安装系统依赖	2026-09-19T05:00:17.4813312Z (Reading database ... 65%
+checkin	安装系统依赖	2026-09-19T05:00:17.7347384Z (Reading database ... 70%
+checkin	安装系统依赖	2026-09-19T05:00:18.0130182Z (Reading database ... 75%
+checkin	安装系统依赖	2026-09-19T05:00:18.4902899Z (Reading database ... 80%
+checkin	安装系统依赖	2026-09-19T05:00:19.0041917Z (Reading database ... 85%
+checkin	安装系统依赖	2026-09-19T05:00:19.5100552Z (Reading database ... 90%
+checkin	安装系统依赖	2026-09-19T05:00:20.1403173Z (Reading database ... 95%
+checkin	安装系统依赖	2026-09-19T05:00:20.1403845Z (Reading database ... 100%
+checkin	安装系统依赖	2026-09-19T05:00:20.1404414Z (Reading database ... 201818 files and directories currently installed.)
+checkin	安装系统依赖	2026-09-19T05:00:20.1447197Z Preparing to unpack .../0-fonts-ipafont-gothic_00303-21ubuntu1_all.deb ...
+checkin	安装系统依赖	2026-09-19T05:00:20.1546365Z Unpacking fonts-ipafont-gothic (00303-21ubuntu1) ...
+checkin	安装系统依赖	2026-09-19T05:00:20.3826485Z Selecting previously unselected package fonts-ipafont-mincho.
+checkin	安装系统依赖	2026-09-19T05:00:20.3952410Z Preparing to unpack .../1-fonts-ipafont-mincho_00303-21ubuntu1_all.deb ...
+checkin	安装系统依赖	2026-09-19T05:00:20.4022895Z Unpacking fonts-ipafont-mincho (00303-21ubuntu1) ...
+checkin	安装系统依赖	2026-09-19T05:00:20.7047160Z Selecting previously unselected package fonts-freefont-ttf.
+checkin	安装系统依赖	2026-09-19T05:00:20.7173150Z Preparing to unpack .../2-fonts-freefont-ttf_20211204+svn4273-2_all.deb ...
+checkin	安装系统依赖	2026-09-19T05:00:20.7184771Z Unpacking fonts-freefont-ttf (20211204+svn4273-2) ...
+checkin	安装系统依赖	2026-09-19T05:00:20.7955439Z Selecting previously unselected package fonts-tlwg-loma-otf.
+checkin	安装系统依赖	2026-09-19T05:00:20.8082172Z Preparing to unpack .../3-fonts-tlwg-loma-otf_1%3a0.7.3-1_all.deb ...
+checkin	安装系统依赖	2026-09-19T05:00:20.8094256Z Unpacking fonts-tlwg-loma-otf (1:0.7.3-1) ...
+checkin	安装系统依赖	2026-09-19T05:00:20.8340409Z Selecting previously unselected package fonts-tlwg-loma.
+checkin	安装系统依赖	2026-09-19T05:00:20.8465588Z Preparing to unpack .../4-fonts-tlwg-loma_1%3a0.7.3-1_all.deb ...
+checkin	安装系统依赖	2026-09-19T05:00:20.8535889Z Unpacking fonts-tlwg-loma (1:0.7.3-1) ...
+checkin	安装系统依赖	2026-09-19T05:00:20.8839787Z Selecting previously unselected package fonts-unifont.
+checkin	安装系统依赖	2026-09-19T05:00:20.8965811Z Preparing to unpack .../5-fonts-unifont_1%3a15.1.01-1build1_all.deb ...
+checkin	安装系统依赖	2026-09-19T05:00:20.8976773Z Unpacking fonts-unifont (1:15.1.01-1build1) ...
+checkin	安装系统依赖	2026-09-19T05:00:21.0008567Z Selecting previously unselected package fonts-wqy-zenhei.
+checkin	安装系统依赖	2026-09-19T05:00:21.0135360Z Preparing to unpack .../6-fonts-wqy-zenhei_0.9.45-8_all.deb ...
+checkin	安装系统依赖	2026-09-19T05:00:21.0230260Z Unpacking fonts-wqy-zenhei (0.9.45-8) ...
+checkin	安装系统依赖	2026-09-19T05:00:21.4995516Z Setting up fonts-wqy-zenhei (0.9.45-8) ...
+checkin	安装系统依赖	2026-09-19T05:00:21.5126543Z Setting up fonts-freefont-ttf (20211204+svn4273-2) ...
+checkin	安装系统依赖	2026-09-19T05:00:21.5156142Z Setting up fonts-tlwg-loma-otf (1:0.7.3-1) ...
+checkin	安装系统依赖	2026-09-19T05:00:21.5186183Z Setting up fonts-ipafont-mincho (00303-21ubuntu1) ...
+checkin	安装系统依赖	2026-09-19T05:00:21.5258986Z update-alternatives: using /usr/share/fonts/opentype/ipafont-mincho/ipam.ttf to provide /usr/share/fonts/truetype/fonts-japanese-mincho.ttf (fonts-japanese-mincho.ttf) in auto mode
+checkin	安装系统依赖	2026-09-19T05:00:21.5282979Z Setting up fonts-ipafont-gothic (00303-21ubuntu1) ...
+checkin	安装系统依赖	2026-09-19T05:00:21.5354063Z update-alternatives: using /usr/share/fonts/opentype/ipafont-gothic/ipag.ttf to provide /usr/share/fonts/truetype/fonts-japanese-gothic.ttf (fonts-japanese-gothic.ttf) in auto mode
+checkin	安装系统依赖	2026-09-19T05:00:21.5374393Z Setting up fonts-tlwg-loma (1:0.7.3-1) ...
+checkin	安装系统依赖	2026-09-19T05:00:21.5449163Z Setting up fonts-unifont (1:15.1.01-1build1) ...
+checkin	安装系统依赖	2026-09-19T05:00:21.5479185Z Processing triggers for fontconfig (2.15.0-1.1ubuntu2) ...
+checkin	安装系统依赖	2026-09-19T05:00:22.8253776Z 
+checkin	安装系统依赖	2026-09-19T05:00:22.8254619Z Running kernel seems to be up-to-date.
+checkin	安装系统依赖	2026-09-19T05:00:22.8255166Z 
+checkin	安装系统依赖	2026-09-19T05:00:22.8255425Z No services need to be restarted.
+checkin	安装系统依赖	2026-09-19T05:00:22.8255838Z 
+checkin	安装系统依赖	2026-09-19T05:00:22.8256094Z No containers need to be restarted.
+checkin	安装系统依赖	2026-09-19T05:00:22.8256527Z 
+checkin	安装系统依赖	2026-09-19T05:00:22.8256832Z No user sessions are running outdated binaries.
+checkin	安装系统依赖	2026-09-19T05:00:22.8257354Z 
+checkin	安装系统依赖	2026-09-19T05:00:22.8257827Z No VM guests are running outdated hypervisor (qemu) binaries on this host.
+checkin	缓存 CloakBrowser 二进制	﻿2026-09-19T05:00:23.7169388Z ##[group]Run actions/cache@v5
+checkin	缓存 CloakBrowser 二进制	2026-09-19T05:00:23.7169704Z with:
+checkin	缓存 CloakBrowser 二进制	2026-09-19T05:00:23.7169931Z   path: ~/.cloakbrowser
+checkin	缓存 CloakBrowser 二进制	2026-09-19T05:00:23.7170214Z   key: Linux-cloakbrowser-v1
+checkin	缓存 CloakBrowser 二进制	2026-09-19T05:00:23.7170505Z   restore-keys: Linux-cloakbrowser-
+checkin	缓存 CloakBrowser 二进制	
+checkin	缓存 CloakBrowser 二进制	2026-09-19T05:00:23.7170810Z   enableCrossOsArchive: false
+checkin	缓存 CloakBrowser 二进制	2026-09-19T05:00:23.7171416Z   fail-on-cache-miss: false
+checkin	缓存 CloakBrowser 二进制	2026-09-19T05:00:23.7171685Z   lookup-only: false
+checkin	缓存 CloakBrowser 二进制	2026-09-19T05:00:23.7171920Z   save-always: false
+checkin	缓存 CloakBrowser 二进制	2026-09-19T05:00:23.7172148Z env:
+checkin	缓存 CloakBrowser 二进制	2026-09-19T05:00:23.7172369Z   PYTHONIOENCODING: utf-8
+checkin	缓存 CloakBrowser 二进制	2026-09-19T05:00:23.7172629Z   PYTHONUNBUFFERED: 1
+checkin	缓存 CloakBrowser 二进制	2026-09-19T05:00:23.7172861Z   DEBUG_MODE: false
+checkin	缓存 CloakBrowser 二进制	2026-09-19T05:00:23.7173092Z   CHECKIN_TARGET: all
+checkin	缓存 CloakBrowser 二进制	2026-09-19T05:00:23.7173411Z   UV_PYTHON_INSTALL_DIR: /home/runner/work/_temp/uv-python-dir
+checkin	缓存 CloakBrowser 二进制	2026-09-19T05:00:23.7173828Z   UV_CACHE_DIR: /home/runner/work/_temp/setup-uv-cache
+checkin	缓存 CloakBrowser 二进制	2026-09-19T05:00:23.7174236Z   pythonLocation: /opt/hostedtoolcache/Python/3.11.16/x64
+checkin	缓存 CloakBrowser 二进制	2026-09-19T05:00:23.7174692Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.11.16/x64/lib/pkgconfig
+checkin	缓存 CloakBrowser 二进制	2026-09-19T05:00:23.7175175Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.16/x64
+checkin	缓存 CloakBrowser 二进制	2026-09-19T05:00:23.7175590Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.16/x64
+checkin	缓存 CloakBrowser 二进制	2026-09-19T05:00:23.7176006Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.16/x64
+checkin	缓存 CloakBrowser 二进制	2026-09-19T05:00:23.7176424Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.11.16/x64/lib
+checkin	缓存 CloakBrowser 二进制	2026-09-19T05:00:23.7176777Z ##[endgroup]
+checkin	缓存 CloakBrowser 二进制	2026-09-19T05:00:24.0928375Z Cache hit for: Linux-cloakbrowser-v1
+checkin	缓存 CloakBrowser 二进制	2026-09-19T05:00:25.3950455Z Received 0 of 202386501 (0.0%), 0.0 MBs/sec
+checkin	缓存 CloakBrowser 二进制	2026-09-19T05:00:26.4002033Z Received 113246208 of 202386501 (56.0%), 53.9 MBs/sec
+checkin	缓存 CloakBrowser 二进制	2026-09-19T05:00:27.0836802Z Received 202386501 of 202386501 (100.0%), 71.8 MBs/sec
+checkin	缓存 CloakBrowser 二进制	2026-09-19T05:00:27.0839450Z Cache Size: ~193 MB (202386501 B)
+checkin	缓存 CloakBrowser 二进制	2026-09-19T05:00:27.0911639Z [command]/usr/bin/tar -xf /home/runner/work/_temp/2f132dc9-0894-408d-8d75-1c481fdce960/cache.tzst -P -C /home/runner/work/anyrouter-checkin/anyrouter-checkin --use-compress-program unzstd
+checkin	缓存 CloakBrowser 二进制	2026-09-19T05:00:28.1232503Z Cache restored successfully
+checkin	缓存 CloakBrowser 二进制	2026-09-19T05:00:28.1403298Z Cache restored from key: Linux-cloakbrowser-v1
+checkin	安装 CloakBrowser	﻿2026-09-19T05:00:28.1543386Z ##[group]Run uv run python -m cloakbrowser install
+checkin	安装 CloakBrowser	2026-09-19T05:00:28.1543837Z ^[[36;1muv run python -m cloakbrowser install^[[0m
+checkin	安装 CloakBrowser	2026-09-19T05:00:28.1544184Z ^[[36;1mecho "✅ CloakBrowser 安装完成"^[[0m
+checkin	安装 CloakBrowser	2026-09-19T05:00:28.1581252Z shell: /usr/bin/bash -e {0}
+checkin	安装 CloakBrowser	2026-09-19T05:00:28.1581537Z env:
+checkin	安装 CloakBrowser	2026-09-19T05:00:28.1581772Z   PYTHONIOENCODING: utf-8
+checkin	安装 CloakBrowser	2026-09-19T05:00:28.1582044Z   PYTHONUNBUFFERED: 1
+checkin	安装 CloakBrowser	2026-09-19T05:00:28.1582293Z   DEBUG_MODE: false
+checkin	安装 CloakBrowser	2026-09-19T05:00:28.1582530Z   CHECKIN_TARGET: all
+checkin	安装 CloakBrowser	2026-09-19T05:00:28.1582851Z   UV_PYTHON_INSTALL_DIR: /home/runner/work/_temp/uv-python-dir
+checkin	安装 CloakBrowser	2026-09-19T05:00:28.1583266Z   UV_CACHE_DIR: /home/runner/work/_temp/setup-uv-cache
+checkin	安装 CloakBrowser	2026-09-19T05:00:28.1583672Z   pythonLocation: /opt/hostedtoolcache/Python/3.11.16/x64
+checkin	安装 CloakBrowser	2026-09-19T05:00:28.1584133Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.11.16/x64/lib/pkgconfig
+checkin	安装 CloakBrowser	2026-09-19T05:00:28.1584602Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.16/x64
+checkin	安装 CloakBrowser	2026-09-19T05:00:28.1585231Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.16/x64
+checkin	安装 CloakBrowser	2026-09-19T05:00:28.1585705Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.16/x64
+checkin	安装 CloakBrowser	2026-09-19T05:00:28.1586134Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.11.16/x64/lib
+checkin	安装 CloakBrowser	2026-09-19T05:00:28.1586497Z ##[endgroup]
+checkin	安装 CloakBrowser	2026-09-19T05:00:28.4673473Z /home/runner/.cloakbrowser/chromium-146.0.7680.177.5/chrome
+checkin	安装 CloakBrowser	2026-09-19T05:00:28.4857460Z ✅ CloakBrowser 安装完成
+checkin	恢复余额历史缓存	﻿2026-09-19T05:00:28.4911942Z ##[group]Run actions/cache@v5
+checkin	恢复余额历史缓存	2026-09-19T05:00:28.4912260Z with:
+checkin	恢复余额历史缓存	2026-09-19T05:00:28.4912492Z   path: balance_hash.txt
+checkin	恢复余额历史缓存	2026-09-19T05:00:28.4912777Z   key: balance-hash-main-35422756163
+checkin	恢复余额历史缓存	2026-09-19T05:00:28.4913126Z   restore-keys: balance-hash-main-
+checkin	恢复余额历史缓存	balance-hash-
+checkin	恢复余额历史缓存	
+checkin	恢复余额历史缓存	2026-09-19T05:00:28.4913480Z   enableCrossOsArchive: false
+checkin	恢复余额历史缓存	2026-09-19T05:00:28.4913758Z   fail-on-cache-miss: false
+checkin	恢复余额历史缓存	2026-09-19T05:00:28.4914030Z   lookup-only: false
+checkin	恢复余额历史缓存	2026-09-19T05:00:28.4914279Z   save-always: false
+checkin	恢复余额历史缓存	2026-09-19T05:00:28.4914508Z env:
+checkin	恢复余额历史缓存	2026-09-19T05:00:28.4914730Z   PYTHONIOENCODING: utf-8
+checkin	恢复余额历史缓存	2026-09-19T05:00:28.4915024Z   PYTHONUNBUFFERED: 1
+checkin	恢复余额历史缓存	2026-09-19T05:00:28.4915277Z   DEBUG_MODE: false
+checkin	恢复余额历史缓存	2026-09-19T05:00:28.4915507Z   CHECKIN_TARGET: all
+checkin	恢复余额历史缓存	2026-09-19T05:00:28.4915832Z   UV_PYTHON_INSTALL_DIR: /home/runner/work/_temp/uv-python-dir
+checkin	恢复余额历史缓存	2026-09-19T05:00:28.4916249Z   UV_CACHE_DIR: /home/runner/work/_temp/setup-uv-cache
+checkin	恢复余额历史缓存	2026-09-19T05:00:28.4916654Z   pythonLocation: /opt/hostedtoolcache/Python/3.11.16/x64
+checkin	恢复余额历史缓存	2026-09-19T05:00:28.4917119Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.11.16/x64/lib/pkgconfig
+checkin	恢复余额历史缓存	2026-09-19T05:00:28.4917607Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.16/x64
+checkin	恢复余额历史缓存	2026-09-19T05:00:28.4918016Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.16/x64
+checkin	恢复余额历史缓存	2026-09-19T05:00:28.4918433Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.16/x64
+checkin	恢复余额历史缓存	2026-09-19T05:00:28.4918852Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.11.16/x64/lib
+checkin	恢复余额历史缓存	2026-09-19T05:00:28.4919206Z ##[endgroup]
+checkin	恢复余额历史缓存	2026-09-19T05:00:28.8698792Z Cache hit for restore-key: balance-hash-main-35419004600
+checkin	恢复余额历史缓存	2026-09-19T05:00:29.4113822Z Received 210 of 210 (100.0%), 0.0 MBs/sec
+checkin	恢复余额历史缓存	2026-09-19T05:00:29.4114476Z Cache Size: ~0 MB (210 B)
+checkin	恢复余额历史缓存	2026-09-19T05:00:29.4157920Z [command]/usr/bin/tar -xf /home/runner/work/_temp/f3aba443-4151-4661-9bbe-3ae501ae37d4/cache.tzst -P -C /home/runner/work/anyrouter-checkin/anyrouter-checkin --use-compress-program unzstd
+checkin	恢复余额历史缓存	2026-09-19T05:00:29.4207864Z Cache restored successfully
+checkin	恢复余额历史缓存	2026-09-19T05:00:29.4284747Z Cache restored from key: balance-hash-main-35419004600
+checkin	恢复浏览器 Profile 缓存	﻿2026-09-19T05:00:29.4432313Z ##[group]Run actions/cache@v5
+checkin	恢复浏览器 Profile 缓存	2026-09-19T05:00:29.4432879Z with:
+checkin	恢复浏览器 Profile 缓存	2026-09-19T05:00:29.4433308Z   path: .browser_profiles
+checkin	恢复浏览器 Profile 缓存	2026-09-19T05:00:29.4433822Z   key: browser-profiles-Linux-v1
+checkin	恢复浏览器 Profile 缓存	2026-09-19T05:00:29.4434395Z   restore-keys: browser-profiles-Linux-
+checkin	恢复浏览器 Profile 缓存	
+checkin	恢复浏览器 Profile 缓存	2026-09-19T05:00:29.4434990Z   enableCrossOsArchive: false
+checkin	恢复浏览器 Profile 缓存	2026-09-19T05:00:29.4435523Z   fail-on-cache-miss: false
+checkin	恢复浏览器 Profile 缓存	2026-09-19T05:00:29.4436009Z   lookup-only: false
+checkin	恢复浏览器 Profile 缓存	2026-09-19T05:00:29.4436456Z   save-always: false
+checkin	恢复浏览器 Profile 缓存	2026-09-19T05:00:29.4436874Z env:
+checkin	恢复浏览器 Profile 缓存	2026-09-19T05:00:29.4437300Z   PYTHONIOENCODING: utf-8
+checkin	恢复浏览器 Profile 缓存	2026-09-19T05:00:29.4437782Z   PYTHONUNBUFFERED: 1
+checkin	恢复浏览器 Profile 缓存	2026-09-19T05:00:29.4438233Z   DEBUG_MODE: false
+checkin	恢复浏览器 Profile 缓存	2026-09-19T05:00:29.4438679Z   CHECKIN_TARGET: all
+checkin	恢复浏览器 Profile 缓存	2026-09-19T05:00:29.4439299Z   UV_PYTHON_INSTALL_DIR: /home/runner/work/_temp/uv-python-dir
+checkin	恢复浏览器 Profile 缓存	2026-09-19T05:00:29.4440074Z   UV_CACHE_DIR: /home/runner/work/_temp/setup-uv-cache
+checkin	恢复浏览器 Profile 缓存	2026-09-19T05:00:29.4440826Z   pythonLocation: /opt/hostedtoolcache/Python/3.11.16/x64
+checkin	恢复浏览器 Profile 缓存	2026-09-19T05:00:29.4441987Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.11.16/x64/lib/pkgconfig
+checkin	恢复浏览器 Profile 缓存	2026-09-19T05:00:29.4442887Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.16/x64
+checkin	恢复浏览器 Profile 缓存	2026-09-19T05:00:29.4443666Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.16/x64
+checkin	恢复浏览器 Profile 缓存	2026-09-19T05:00:29.4444467Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.16/x64
+checkin	恢复浏览器 Profile 缓存	2026-09-19T05:00:29.4445238Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.11.16/x64/lib
+checkin	恢复浏览器 Profile 缓存	2026-09-19T05:00:29.4445903Z ##[endgroup]
+checkin	恢复浏览器 Profile 缓存	2026-09-19T05:00:29.8202747Z Cache not found for input keys: browser-profiles-Linux-v1, browser-profiles-Linux-
+checkin	配置代理	﻿2026-09-19T05:00:29.8298105Z ##[group]Run bash scripts/setup_mihomo_proxy.sh
+checkin	配置代理	2026-09-19T05:00:29.8298531Z ^[[36;1mbash scripts/setup_mihomo_proxy.sh^[[0m
+checkin	配置代理	2026-09-19T05:00:29.8335113Z shell: /usr/bin/bash -e {0}
+checkin	配置代理	2026-09-19T05:00:29.8335401Z env:
+checkin	配置代理	2026-09-19T05:00:29.8335639Z   PYTHONIOENCODING: utf-8
+checkin	配置代理	2026-09-19T05:00:29.8335922Z   PYTHONUNBUFFERED: 1
+checkin	配置代理	2026-09-19T05:00:29.8336172Z   DEBUG_MODE: false
+checkin	配置代理	2026-09-19T05:00:29.8336415Z   CHECKIN_TARGET: all
+checkin	配置代理	2026-09-19T05:00:29.8336746Z   UV_PYTHON_INSTALL_DIR: /home/runner/work/_temp/uv-python-dir
+checkin	配置代理	2026-09-19T05:00:29.8337176Z   UV_CACHE_DIR: /home/runner/work/_temp/setup-uv-cache
+checkin	配置代理	2026-09-19T05:00:29.8337595Z   pythonLocation: /opt/hostedtoolcache/Python/3.11.16/x64
+checkin	配置代理	2026-09-19T05:00:29.8338071Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.11.16/x64/lib/pkgconfig
+checkin	配置代理	2026-09-19T05:00:29.8338564Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.16/x64
+checkin	配置代理	2026-09-19T05:00:29.8338991Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.16/x64
+checkin	配置代理	2026-09-19T05:00:29.8339431Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.16/x64
+checkin	配置代理	2026-09-19T05:00:29.8339923Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.11.16/x64/lib
+checkin	配置代理	2026-09-19T05:00:29.8341206Z   PROXY_SUBSCRIPTION_URL: ***
+checkin	配置代理	2026-09-19T05:00:29.8341581Z   PROXY_TEST_URL: https://www.google.com/generate_204
+checkin	配置代理	2026-09-19T05:00:29.8341936Z   MIHOMO_VERSION: v1.19.27
+checkin	配置代理	2026-09-19T05:00:29.8342206Z   PROXY_REQUIRED: false
+checkin	配置代理	2026-09-19T05:00:29.8342456Z ##[endgroup]
+checkin	配置代理	2026-09-19T05:00:29.8427680Z [INFO] Downloading mihomo v1.19.27...
+checkin	配置代理	2026-09-19T05:00:30.6806551Z [INFO] CHECKIN proxy uses automatic url-test selection
+checkin	配置代理	2026-09-19T05:00:30.6817610Z [INFO] Starting mihomo on 127.0.0.1:7890...
+checkin	配置代理	2026-09-19T05:00:30.6943318Z curl: (7) Failed to connect to 127.0.0.1 port 7890 after 0 ms: Couldn't connect to server
+checkin	配置代理	2026-09-19T05:00:30.6952964Z [INFO] Waiting for proxy health check (1/45, curl=7, http=000)...
+checkin	配置代理	2026-09-19T05:00:32.7288178Z [SUCCESS] Proxy is ready: http://127.0.0.1:7890
+checkin	配置代理	2026-09-19T05:00:32.7289196Z [INFO] Proxy is scoped to CHECKIN_PROXY_URL (browser/python only, not global HTTP_PROXY)
+checkin	执行签到	﻿2026-09-19T05:00:32.7335360Z ##[group]Run xvfb-run -a --server-args="-screen 0 1920x1080x24" uv run checkin.py
+checkin	执行签到	2026-09-19T05:00:32.7335997Z ^[[36;1mxvfb-run -a --server-args="-screen 0 1920x1080x24" uv run checkin.py^[[0m
+checkin	执行签到	2026-09-19T05:00:32.7373344Z shell: /usr/bin/bash -e {0}
+checkin	执行签到	2026-09-19T05:00:32.7373633Z env:
+checkin	执行签到	2026-09-19T05:00:32.7373875Z   PYTHONIOENCODING: utf-8
+checkin	执行签到	2026-09-19T05:00:32.7374161Z   PYTHONUNBUFFERED: 1
+checkin	执行签到	2026-09-19T05:00:32.7374417Z   DEBUG_MODE: false
+checkin	执行签到	2026-09-19T05:00:32.7374660Z   CHECKIN_TARGET: all
+checkin	执行签到	2026-09-19T05:00:32.7374988Z   UV_PYTHON_INSTALL_DIR: /home/runner/work/_temp/uv-python-dir
+checkin	执行签到	2026-09-19T05:00:32.7375420Z   UV_CACHE_DIR: /home/runner/work/_temp/setup-uv-cache
+checkin	执行签到	2026-09-19T05:00:32.7375835Z   pythonLocation: /opt/hostedtoolcache/Python/3.11.16/x64
+checkin	执行签到	2026-09-19T05:00:32.7376328Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.11.16/x64/lib/pkgconfig
+checkin	执行签到	2026-09-19T05:00:32.7376805Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.16/x64
+checkin	执行签到	2026-09-19T05:00:32.7377235Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.16/x64
+checkin	执行签到	2026-09-19T05:00:32.7377686Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.16/x64
+checkin	执行签到	2026-09-19T05:00:32.7378114Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.11.16/x64/lib
+checkin	执行签到	2026-09-19T05:00:32.7378511Z   CHECKIN_PROXY_URL: http://127.0.0.1:7890
+checkin	执行签到	2026-09-19T05:00:32.7378831Z   CHECKIN_HEADLESS: false
+checkin	执行签到	2026-09-19T05:00:32.7379094Z   CHECKIN_HUMANIZE: true
+checkin	执行签到	2026-09-19T05:00:32.7379361Z   CHECKIN_WAIT_TIMEOUT_MS: 120000
+checkin	执行签到	2026-09-19T05:00:32.7383158Z   ANYROUTER_ACCOUNTS: ***
+checkin	执行签到	2026-09-19T05:00:32.7383789Z   AGENTROUTER_ACCOUNTS: ***
+checkin	执行签到	
+checkin	执行签到	2026-09-19T05:00:32.7384067Z   PSYCHE_ACCOUNTS: 
+checkin	执行签到	2026-09-19T05:00:32.7384954Z   APICHATGPT_ACCOUNTS: ***
+checkin	执行签到	2026-09-19T05:00:32.7385224Z   PROVIDERS: 
+checkin	执行签到	2026-09-19T05:00:32.7385453Z   DINGDING_WEBHOOK: 
+checkin	执行签到	2026-09-19T05:00:32.7385690Z   EMAIL_USER: 
+checkin	执行签到	2026-09-19T05:00:32.7385915Z   EMAIL_PASS: 
+checkin	执行签到	2026-09-19T05:00:32.7386135Z   EMAIL_TO: 
+checkin	执行签到	2026-09-19T05:00:32.7386349Z   EMAIL_SENDER: 
+checkin	执行签到	2026-09-19T05:00:32.7386757Z   CUSTOM_SMTP_SERVER: 
+checkin	执行签到	2026-09-19T05:00:32.7387006Z   PUSHPLUS_TOKEN: 
+checkin	执行签到	2026-09-19T05:00:32.7387434Z   SERVERPUSHKEY: ***
+checkin	执行签到	2026-09-19T05:00:32.7387674Z   FEISHU_WEBHOOK: 
+checkin	执行签到	2026-09-19T05:00:32.7387899Z   WEIXIN_WEBHOOK: 
+checkin	执行签到	2026-09-19T05:00:32.7388131Z   TELEGRAM_BOT_TOKEN: 
+checkin	执行签到	2026-09-19T05:00:32.7388372Z   TELEGRAM_CHAT_ID: 
+checkin	执行签到	2026-09-19T05:00:32.7388604Z   GOTIFY_URL: 
+checkin	执行签到	2026-09-19T05:00:32.7388825Z   GOTIFY_TOKEN: 
+checkin	执行签到	2026-09-19T05:00:32.7389051Z   GOTIFY_PRIORITY: 
+checkin	执行签到	2026-09-19T05:00:32.7389278Z   BARK_KEY: 
+checkin	执行签到	2026-09-19T05:00:32.7389492Z   BARK_SERVER: 
+checkin	执行签到	2026-09-19T05:00:32.7389732Z   DISABLED_PROVIDERS: apichatgpt
+checkin	执行签到	2026-09-19T05:00:32.7390010Z ##[endgroup]
+checkin	执行签到	2026-09-19T05:00:33.4006501Z [INFO] Debug mode disabled (set DEBUG_MODE=true to enable screenshots and verbose logs)
+checkin	执行签到	2026-09-19T05:00:33.4007678Z [SYSTEM] Multi-provider auto check-in script started
+checkin	执行签到	2026-09-19T05:00:33.4008448Z [TIME] Execution time: 2026-09-19 05:00:33
+checkin	执行签到	2026-09-19T05:00:33.4009137Z [INFO] Loaded 4 provider configuration(s)
+checkin	执行签到	2026-09-19T05:00:33.4009846Z [INFO] Disabled providers: apichatgpt
+checkin	执行签到	2026-09-19T05:00:33.4010621Z [INFO] Skipped disabled provider(s): apichatgpt (2 account(s))
+checkin	执行签到	2026-09-19T05:00:33.4011673Z [INFO] Check-in target: all
+checkin	执行签到	2026-09-19T05:00:33.4012251Z [INFO] Found 2 account configurations
+checkin	执行签到	2026-09-19T05:00:33.4012631Z 
+checkin	执行签到	2026-09-19T05:00:33.4012804Z [PROCESSING] Starting to process AnyRouter
+checkin	执行签到	2026-09-19T05:00:33.4013375Z [INFO] AnyRouter: Using provider "anyrouter" (https://anyrouter.top)
+checkin	执行签到	2026-09-19T05:00:33.4014027Z [PROCESSING] AnyRouter: Starting browser to get WAF cookies...
+checkin	执行签到	2026-09-19T05:00:33.9245398Z Update available: cloakbrowser 0.3.31 → 0.5.10. Run: pip install --upgrade cloakbrowser
+checkin	执行签到	2026-09-19T05:00:35.1173108Z [PROCESSING] AnyRouter: Access login page to get initial cookies...
+checkin	执行签到	2026-09-19T05:00:37.7550679Z [INFO] AnyRouter: Got 3 WAF cookies
+checkin	执行签到	2026-09-19T05:00:37.7551646Z [SUCCESS] AnyRouter: Successfully got all WAF cookies
+checkin	执行签到	2026-09-19T05:00:37.8456718Z [AUTH] AnyRouter: Using auth method -> session cookies
+checkin	执行签到	2026-09-19T05:00:38.4715090Z :money: Current balance: $1525.74, Used: $874.26
+checkin	执行签到	2026-09-19T05:00:38.4716001Z [NETWORK] AnyRouter: Executing check-in
+checkin	执行签到	2026-09-19T05:00:38.6287375Z [RESPONSE] AnyRouter: Response status code 200
+checkin	执行签到	2026-09-19T05:00:38.6288303Z [SUCCESS] AnyRouter: Check-in successful!
+checkin	执行签到	2026-09-19T05:00:38.7850904Z [INFO] AnyRouter: Balance after check-in: :money: Current balance: $1525.74, Used: $874.26
+checkin	执行签到	2026-09-19T05:00:38.7851918Z 
+checkin	执行签到	2026-09-19T05:00:38.7852202Z [PROCESSING] Starting to process AgentRouter
+checkin	执行签到	2026-09-19T05:00:38.7852982Z [INFO] AgentRouter: Using provider "agentrouter" (https://agentrouter.org)
+checkin	执行签到	2026-09-19T05:00:38.7853659Z [INFO] AgentRouter: Attempting email/password login (priority)...
+checkin	执行签到	2026-09-19T05:00:38.7854254Z [PROCESSING] AgentRouter: Starting browser to get WAF cookies...
+checkin	执行签到	2026-09-19T05:00:39.3471885Z [PROCESSING] AgentRouter: Access login page to get initial cookies...
+checkin	执行签到	2026-09-19T05:01:13.2503751Z [INFO] AgentRouter: Got 1 WAF cookies
+checkin	执行签到	2026-09-19T05:01:13.2504347Z [SUCCESS] AgentRouter: Successfully got all WAF cookies
+checkin	执行签到	2026-09-19T05:01:13.3219324Z [PROCESSING] AgentRouter: Logging in with email/password...
+checkin	执行签到	2026-09-19T05:01:13.3220047Z [INFO] AgentRouter: Provider proxy=enabled (agentrouter)
+checkin	执行签到	2026-09-19T05:01:13.3220724Z [INFO] Browser proxy enabled
+checkin	执行签到	2026-09-19T05:01:17.0367274Z [INFO] Warming up https://agentrouter.org/ before login
+checkin	执行签到	2026-09-19T05:01:26.7347251Z [INFO] Dismissed 1 popup dialog(s) during warmup
+checkin	执行签到	2026-09-19T05:01:26.7348528Z [INFO] Navigating login page (attempt 1/3): https://agentrouter.org/login
+checkin	执行签到	2026-09-19T05:01:54.6532738Z [INFO] Verifying login via https://agentrouter.org/console and /api/user/self
+checkin	执行签到	2026-09-19T05:01:57.4989856Z [INFO] Login verified
+checkin	执行签到	2026-09-19T05:01:57.5015405Z [SUCCESS] AgentRouter: Login successful, got 2 cookies
+checkin	执行签到	2026-09-19T05:01:57.8177247Z [AUTH] AgentRouter: Using auth method -> email/password
+checkin	执行签到	2026-09-19T05:01:57.8177757Z [INFO] AgentRouter: HTTP client proxy enabled
+checkin	执行签到	2026-09-19T05:01:58.6458858Z :money: Current balance: $359.41, Used: $65.59
+checkin	执行签到	2026-09-19T05:01:58.8508709Z [INFO] AgentRouter: Check-in completed automatically (triggered by user info request)
+checkin	执行签到	2026-09-19T05:01:58.8519603Z [INFO] Balance snapshot changed; preparing a balance-change notification
+checkin	执行签到	2026-09-19T05:01:58.8520257Z [NOTIFY] Balance snapshot changed, will send notification
+checkin	执行签到	2026-09-19T05:01:58.8523526Z [TIME] Execution time: 2026-09-19 05:01:58
+checkin	执行签到	2026-09-19T05:01:58.8523918Z 
+checkin	执行签到	2026-09-19T05:01:58.8524039Z [BALANCE] AnyRouter
+checkin	执行签到	2026-09-19T05:01:58.8524530Z   ━━━━━━━━━━━━━━━━━━━━
+checkin	执行签到	2026-09-19T05:01:58.8524895Z   检测到余额已更新（可能是签到延迟到账）
+checkin	执行签到	2026-09-19T05:01:58.8525190Z   当前余额: $1525.74
+checkin	执行签到	2026-09-19T05:01:58.8525473Z   累计消耗: $874.26
+checkin	执行签到	2026-09-19T05:01:58.8525733Z [BALANCE] AgentRouter
+checkin	执行签到	2026-09-19T05:01:58.8526040Z   ━━━━━━━━━━━━━━━━━━━━
+checkin	执行签到	2026-09-19T05:01:58.8526342Z   检测到余额已更新（可能是签到延迟到账）
+checkin	执行签到	2026-09-19T05:01:58.8526623Z   当前余额: $359.41
+checkin	执行签到	2026-09-19T05:01:58.8526892Z   累计消耗: $65.59
+checkin	执行签到	2026-09-19T05:01:58.8527038Z 
+checkin	执行签到	2026-09-19T05:01:58.8527170Z [STATS] Check-in result statistics:
+checkin	执行签到	2026-09-19T05:01:58.8527512Z [SUCCESS] Success: 2/2
+checkin	执行签到	2026-09-19T05:01:58.8527856Z [SUCCESS] All accounts check-in successful!
+checkin	执行签到	2026-09-19T05:01:58.8528108Z 
+checkin	执行签到	2026-09-19T05:01:58.8528435Z [LOG] Full log: https://github.com/petersb888/anyrouter-checkin/actions/runs/35422756163
+checkin	执行签到	2026-09-19T05:02:00.2294929Z [Server Push]: Message push successful!
+checkin	执行签到	2026-09-19T05:02:00.2295774Z [NOTIFY] 余额变化通知 sent
+checkin	停止代理	﻿2026-09-19T05:02:00.2752868Z ##[group]Run bash scripts/stop_mihomo_proxy.sh
+checkin	停止代理	2026-09-19T05:02:00.2753319Z ^[[36;1mbash scripts/stop_mihomo_proxy.sh^[[0m
+checkin	停止代理	2026-09-19T05:02:00.2789767Z shell: /usr/bin/bash -e {0}
+checkin	停止代理	2026-09-19T05:02:00.2790053Z env:
+checkin	停止代理	2026-09-19T05:02:00.2790287Z   PYTHONIOENCODING: utf-8
+checkin	停止代理	2026-09-19T05:02:00.2790567Z   PYTHONUNBUFFERED: 1
+checkin	停止代理	2026-09-19T05:02:00.2790826Z   DEBUG_MODE: false
+checkin	停止代理	2026-09-19T05:02:00.2791338Z   CHECKIN_TARGET: all
+checkin	停止代理	2026-09-19T05:02:00.2791676Z   UV_PYTHON_INSTALL_DIR: /home/runner/work/_temp/uv-python-dir
+checkin	停止代理	2026-09-19T05:02:00.2792100Z   UV_CACHE_DIR: /home/runner/work/_temp/setup-uv-cache
+checkin	停止代理	2026-09-19T05:02:00.2792508Z   pythonLocation: /opt/hostedtoolcache/Python/3.11.16/x64
+checkin	停止代理	2026-09-19T05:02:00.2792983Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.11.16/x64/lib/pkgconfig
+checkin	停止代理	2026-09-19T05:02:00.2793457Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.16/x64
+checkin	停止代理	2026-09-19T05:02:00.2793876Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.16/x64
+checkin	停止代理	2026-09-19T05:02:00.2794296Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.16/x64
+checkin	停止代理	2026-09-19T05:02:00.2794750Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.11.16/x64/lib
+checkin	停止代理	2026-09-19T05:02:00.2795151Z   CHECKIN_PROXY_URL: http://127.0.0.1:7890
+checkin	停止代理	2026-09-19T05:02:00.2795465Z ##[endgroup]
+checkin	停止代理	2026-09-19T05:02:00.2876008Z [INFO] Stopping mihomo proxy (pid 3001)
+checkin	执行结果	﻿2026-09-19T05:02:00.2928603Z ##[group]Run echo "签到任务执行完成"
+checkin	执行结果	2026-09-19T05:02:00.2928940Z ^[[36;1mecho "签到任务执行完成"^[[0m
+checkin	执行结果	2026-09-19T05:02:00.2929210Z ^[[36;1mecho "时间: $(date)"^[[0m
+checkin	执行结果	2026-09-19T05:02:00.2929726Z ^[[36;1mif [ "${DEBUG_MODE}" = "true" ] && [ -d checkin_screenshots ] && [ "$(ls -A checkin_screenshots 2>/dev/null)" ]; then^[[0m
+checkin	执行结果	2026-09-19T05:02:00.2930429Z ^[[36;1m  echo "调试截图已上传为 artifact: checkin-screenshots-35422756163"^[[0m
+checkin	执行结果	2026-09-19T05:02:00.2930844Z ^[[36;1m  ls -la checkin_screenshots/^[[0m
+checkin	执行结果	2026-09-19T05:02:00.2931411Z ^[[36;1mfi^[[0m
+checkin	执行结果	2026-09-19T05:02:00.2964494Z shell: /usr/bin/bash -e {0}
+checkin	执行结果	2026-09-19T05:02:00.2964784Z env:
+checkin	执行结果	2026-09-19T05:02:00.2965018Z   PYTHONIOENCODING: utf-8
+checkin	执行结果	2026-09-19T05:02:00.2965299Z   PYTHONUNBUFFERED: 1
+checkin	执行结果	2026-09-19T05:02:00.2965549Z   DEBUG_MODE: false
+checkin	执行结果	2026-09-19T05:02:00.2965789Z   CHECKIN_TARGET: all
+checkin	执行结果	2026-09-19T05:02:00.2966124Z   UV_PYTHON_INSTALL_DIR: /home/runner/work/_temp/uv-python-dir
+checkin	执行结果	2026-09-19T05:02:00.2966555Z   UV_CACHE_DIR: /home/runner/work/_temp/setup-uv-cache
+checkin	执行结果	2026-09-19T05:02:00.2966975Z   pythonLocation: /opt/hostedtoolcache/Python/3.11.16/x64
+checkin	执行结果	2026-09-19T05:02:00.2967481Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.11.16/x64/lib/pkgconfig
+checkin	执行结果	2026-09-19T05:02:00.2967940Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.16/x64
+checkin	执行结果	2026-09-19T05:02:00.2968379Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.16/x64
+checkin	执行结果	2026-09-19T05:02:00.2968970Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.16/x64
+checkin	执行结果	2026-09-19T05:02:00.2969420Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.11.16/x64/lib
+checkin	执行结果	2026-09-19T05:02:00.2969818Z   CHECKIN_PROXY_URL: http://127.0.0.1:7890
+checkin	执行结果	2026-09-19T05:02:00.2970128Z ##[endgroup]
+checkin	执行结果	2026-09-19T05:02:00.3024731Z 签到任务执行完成
+checkin	执行结果	2026-09-19T05:02:00.3036866Z 时间: Sat Sep 19 05:02:00 UTC 2026
+checkin	Post 恢复浏览器 Profile 缓存	﻿2026-09-19T05:02:00.3105116Z Post job cleanup.
+checkin	Post 恢复浏览器 Profile 缓存	2026-09-19T05:02:00.4536858Z [warning]Path Validation Error: Path(s) specified in the action for caching do(es) not exist, hence no cache is being saved.
+checkin	Post 恢复余额历史缓存	﻿2026-09-19T05:02:00.4691640Z Post job cleanup.
+checkin	Post 恢复余额历史缓存	2026-09-19T05:02:00.6295587Z [command]/usr/bin/tar --posix -cf cache.tzst --exclude cache.tzst -P -C /home/runner/work/anyrouter-checkin/anyrouter-checkin --files-from manifest.txt --use-compress-program zstdmt
+checkin	Post 恢复余额历史缓存	2026-09-19T05:02:01.1838064Z Sent 210 of 210 (100.0%), 0.0 MBs/sec
+checkin	Post 恢复余额历史缓存	2026-09-19T05:02:01.5077262Z Cache saved with key: balance-hash-main-35422756163
+checkin	Post 缓存 CloakBrowser 二进制	﻿2026-09-19T05:02:01.5192650Z Post job cleanup.
+checkin	Post 缓存 CloakBrowser 二进制	2026-09-19T05:02:01.6487547Z Cache hit occurred on the primary key Linux-cloakbrowser-v1, not saving cache.
+checkin	Post 缓存 UV 依赖	﻿2026-09-19T05:02:01.7170479Z Post job cleanup.
+checkin	Post 缓存 UV 依赖	2026-09-19T05:02:01.8560064Z [warning]Path Validation Error: Path(s) specified in the action for caching do(es) not exist, hence no cache is being saved.
+checkin	Post Run actions/setup-python@v6	﻿2026-09-19T05:02:01.8730473Z Post job cleanup.
+checkin	Post Run astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b	﻿2026-09-19T05:02:02.0267201Z Post job cleanup.
+checkin	Post Run astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b	2026-09-19T05:02:02.1497389Z UV_CACHE_DIR is already set to /home/runner/work/_temp/setup-uv-cache
+checkin	Post Run astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b	2026-09-19T05:02:02.1504996Z UV_PYTHON_INSTALL_DIR is already set to /home/runner/work/_temp/uv-python-dir
+checkin	Post Run astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b	2026-09-19T05:02:02.1507218Z Cache hit occurred on key setup-uv-2-x86_64-unknown-linux-gnu-ubuntu-24.04-unknown-pruned-b78d1ace7413ed87b64b92afb1993e19baa00886a0fb938c2c36192712a35826, not saving cache.
+checkin	Post Run actions/checkout@v6	﻿2026-09-19T05:02:02.2166538Z Post job cleanup.
+checkin	Post Run actions/checkout@v6	2026-09-19T05:02:02.3082510Z [command]/usr/bin/git version
+checkin	Post Run actions/checkout@v6	2026-09-19T05:02:02.3129769Z git version 2.55.0
+checkin	Post Run actions/checkout@v6	2026-09-19T05:02:02.3173640Z Temporarily overriding HOME='/home/runner/work/_temp/fec6383d-b5c3-4b61-b2c9-01e590487fe0' before making global git config changes
+checkin	Post Run actions/checkout@v6	2026-09-19T05:02:02.3175121Z Adding repository directory to the temporary git global config as a safe directory
+checkin	Post Run actions/checkout@v6	2026-09-19T05:02:02.3179320Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/anyrouter-checkin/anyrouter-checkin
+checkin	Post Run actions/checkout@v6	2026-09-19T05:02:02.3213967Z Removing SSH command configuration
+checkin	Post Run actions/checkout@v6	2026-09-19T05:02:02.3221120Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+checkin	Post Run actions/checkout@v6	2026-09-19T05:02:02.3264344Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+checkin	Post Run actions/checkout@v6	2026-09-19T05:02:02.3532201Z Removing HTTP extra header
+checkin	Post Run actions/checkout@v6	2026-09-19T05:02:02.3535905Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+checkin	Post Run actions/checkout@v6	2026-09-19T05:02:02.3577030Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+checkin	Post Run actions/checkout@v6	2026-09-19T05:02:02.3839376Z Removing includeIf entries pointing to credentials config files
+checkin	Post Run actions/checkout@v6	2026-09-19T05:02:02.3848084Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+checkin	Post Run actions/checkout@v6	2026-09-19T05:02:02.3892341Z includeif.gitdir:/home/runner/work/anyrouter-checkin/anyrouter-checkin/.git.path
+checkin	Post Run actions/checkout@v6	2026-09-19T05:02:02.3893850Z includeif.gitdir:/home/runner/work/anyrouter-checkin/anyrouter-checkin/.git/worktrees/*.path
+checkin	Post Run actions/checkout@v6	2026-09-19T05:02:02.3894611Z includeif.gitdir:/github/workspace/.git.path
+checkin	Post Run actions/checkout@v6	2026-09-19T05:02:02.3895177Z includeif.gitdir:/github/workspace/.git/worktrees/*.path
+checkin	Post Run actions/checkout@v6	2026-09-19T05:02:02.3896716Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/anyrouter-checkin/anyrouter-checkin/.git.path
+checkin	Post Run actions/checkout@v6	2026-09-19T05:02:02.3918461Z /home/runner/work/_temp/git-credentials-addf24c6-14d5-4ab9-b119-4d9ab1fdb00d.config
+checkin	Post Run actions/checkout@v6	2026-09-19T05:02:02.3930891Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/anyrouter-checkin/anyrouter-checkin/.git.path /home/runner/work/_temp/git-credentials-addf24c6-14d5-4ab9-b119-4d9ab1fdb00d.config
+checkin	Post Run actions/checkout@v6	2026-09-19T05:02:02.3973120Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/anyrouter-checkin/anyrouter-checkin/.git/worktrees/*.path
+checkin	Post Run actions/checkout@v6	2026-09-19T05:02:02.4001697Z /home/runner/work/_temp/git-credentials-addf24c6-14d5-4ab9-b119-4d9ab1fdb00d.config
+checkin	Post Run actions/checkout@v6	2026-09-19T05:02:02.4014505Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/anyrouter-checkin/anyrouter-checkin/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-addf24c6-14d5-4ab9-b119-4d9ab1fdb00d.config
+checkin	Post Run actions/checkout@v6	2026-09-19T05:02:02.4054753Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git.path
+checkin	Post Run actions/checkout@v6	2026-09-19T05:02:02.4084070Z /github/runner_temp/git-credentials-addf24c6-14d5-4ab9-b119-4d9ab1fdb00d.config
+checkin	Post Run actions/checkout@v6	2026-09-19T05:02:02.4094904Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-addf24c6-14d5-4ab9-b119-4d9ab1fdb00d.config
+checkin	Post Run actions/checkout@v6	2026-09-19T05:02:02.4131580Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git/worktrees/*.path
+checkin	Post Run actions/checkout@v6	2026-09-19T05:02:02.4160538Z /github/runner_temp/git-credentials-addf24c6-14d5-4ab9-b119-4d9ab1fdb00d.config
+checkin	Post Run actions/checkout@v6	2026-09-19T05:02:02.4173228Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-addf24c6-14d5-4ab9-b119-4d9ab1fdb00d.config
+checkin	Post Run actions/checkout@v6	2026-09-19T05:02:02.4214809Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+checkin	Post Run actions/checkout@v6	2026-09-19T05:02:02.4448283Z Removing credentials config '/home/runner/work/_temp/git-credentials-addf24c6-14d5-4ab9-b119-4d9ab1fdb00d.config'
+checkin	Complete job	﻿2026-09-19T05:02:02.4602611Z Cleaning up orphan processes
