@@ -43,4 +43,4 @@ jobs:
     - name: 探针
       env:
         ANYROUTER_ACCOUNTS: ${{ secrets.ANYROUTER_ACCOUNTS }}
-      run: xvfb-run -a --server-args="-screen 0 1920x1080x24" uv run python _tmp_probe_session.py
+      run: xvfb-run -a --server-args="-screen 0 1920x1080x24" uv run python _tmp_probe_endpoints.py
