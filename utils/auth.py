@@ -53,6 +53,7 @@ async def login_with_api_credentials(
 	*,
 	account_name: str,
 	use_proxy: bool = False,
+	api_user_key: str | None = None,
 ) -> CredentialLoginResult | None:
 	"""通过 New-API 登录接口刷新 session，并用用户信息接口验证。"""
 	client_kwargs: dict = {'http2': True, 'timeout': 30.0, 'follow_redirects': True}
@@ -96,9 +97,21 @@ async def login_with_api_credentials(
 				print(f'[FAILED] {account_name}: API credential login was rejected')
 				return None
 
+			profile = _extract_profile(login_payload)
+			if not profile:
+				print(f'[FAILED] {account_name}: API credential login returned no profile')
+				return None
+
+			# New-API 的部分站点要求请求头携带当前用户 ID，否则用户信息接口返回 401。
+			verify_headers = dict(headers)
+			verify_headers.update({'Cache-Control': 'no-cache, no-store', 'Pragma': 'no-cache'})
+			profile_id = profile.get('id')
+			if api_user_key and profile_id is not None:
+				verify_headers[api_user_key] = str(profile_id)
+
 			verify_response = await client.get(
 				user_info_url,
-				headers={**headers, 'Cache-Control': 'no-cache, no-store', 'Pragma': 'no-cache'},
+				headers=verify_headers,
 			)
 			if verify_response.status_code != 200:
 				print(f'[FAILED] {account_name}: API credential session verification failed - HTTP {verify_response.status_code}')

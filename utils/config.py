@@ -105,7 +105,10 @@ class AppConfig:
 				name='agentrouter',
 				domain='https://agentrouter.org',
 				login_path='/login',
-				sign_in_path=None,  # 无需签到接口，查询用户信息时自动完成签到
+				# 该站没有独立签到接口：每日额度在账号登录成功的那一刻发放，
+				# 因此必须用邮箱密码主动登录一次，仅查询用户信息不会触发签到。
+				login_api_path='/api/user/login',
+				sign_in_path=None,  # 登录即完成签到，无需再调用签到接口
 				user_info_path='/api/user/self',
 				api_user_key='new-api-user',
 				bypass_method='waf_cookies',

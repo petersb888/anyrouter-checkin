@@ -495,6 +495,7 @@ async def check_in_account(account: AccountConfig, account_index: int, app_confi
 				account.password,
 				account_name=account_name,
 				use_proxy=provider_config.use_proxy,
+				api_user_key=provider_config.api_user_key,
 			)
 		else:
 			login_result = await login_with_credentials(
