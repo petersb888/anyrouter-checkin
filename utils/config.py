@@ -105,17 +105,16 @@ class AppConfig:
 				name='agentrouter',
 				domain='https://agentrouter.org',
 				login_path='/login',
-				# 该站没有独立签到接口：每日额度在账号登录成功的那一刻发放，
-				# 因此必须用邮箱密码主动登录一次，仅查询用户信息不会触发签到。
-				login_api_path='/api/user/login',
+				# 该站没有独立签到接口：每日额度在账号登录成功的那一刻发放。
+				# 仅查询用户信息不会触发签到，必须用邮箱密码主动走一次登录流程。
+				# 登录接口受阿里云 WAF 保护，纯 HTTP 请求会被验证页拦截，因此
+				# 这里不配置 login_api_path，改用真实浏览器完成登录。
 				sign_in_path=None,  # 登录即完成签到，无需再调用签到接口
 				user_info_path='/api/user/self',
 				api_user_key='new-api-user',
 				bypass_method='waf_cookies',
 				waf_cookie_names=['acw_tc'],
-				# 登录接口走海外代理会被阿里云 WAF 拦截并返回验证页，
-				# 因此认证与签到必须直连；仅浏览器取 WAF cookie 时可另行走代理。
-				use_proxy=False,
+				use_proxy=True,
 				persist_profile=False,
 			),
 			'psyche': ProviderConfig(
