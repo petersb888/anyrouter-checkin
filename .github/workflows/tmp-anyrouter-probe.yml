@@ -1,0 +1,49 @@
+name: TMP AnyRouter probe
+
+on:
+  workflow_dispatch:
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+    - uses: actions/setup-python@v6
+      with:
+        python-version: '3.11'
+
+    - name: Probe AnyRouter user id
+      env:
+        ANYROUTER_ACCOUNTS: ${{ secrets.ANYROUTER_ACCOUNTS }}
+        PROBE_ID: ${{ vars.PROBE_ANYROUTER_ID }}
+      run: |
+        python - <<'PY'
+        import json, os, httpx
+
+        raw = os.environ.get('ANYROUTER_ACCOUNTS', '').strip()
+        data = json.loads(raw)
+        if isinstance(data, dict):
+            data = [data]
+        acc = data[0]
+        print('account keys:', sorted(acc.keys()))
+        print('configured api_user:', acc.get('api_user'))
+        cookies = acc.get('cookies') or {}
+        print('cookie names:', sorted(cookies.keys()))
+        print('has password:', bool(acc.get('password')))
+
+        D = 'https://anyrouter.top'
+        H = {
+            'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36',
+            'Accept': 'application/json, text/plain, */*',
+            'X-Requested-With': 'XMLHttpRequest',
+        }
+        for candidate in [acc.get('api_user'), os.environ.get('PROBE_ID'), '79296', None]:
+            headers = dict(H)
+            if candidate:
+                headers['New-Api-User'] = str(candidate)
+            with httpx.Client(timeout=30.0) as c:
+                c.cookies.update(cookies)
+                r = c.get(D + '/api/user/self', headers=headers)
+            body = ' '.join(r.text.split())[:150]
+            print(f'candidate={candidate!r} -> HTTP {r.status_code} | {body}')
+        PY
