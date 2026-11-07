@@ -89,6 +89,19 @@ COOKIE_VALIDATION_REPLACEMENT = """        # 先检查页面元素，再使用 D
             time.sleep(2)
             return True
 
+        # Discourse 只在已登录会话中把未读通知数写进标题，例如 "(2) LINUX DO - ..."。
+        # Cloudflare 会挑战 session API，但首页标题仍是可靠的登录信号。
+        title_head = home_title.strip()
+        if (
+            title_head.startswith("(")
+            and ")" in title_head[:8]
+            and "linux do" in lower_title
+        ):
+            logger.info("Cookie 登录验证成功 (通过未读计数标题)")
+            self.page.get(HOME_URL)
+            time.sleep(2)
+            return True
+
         logger.error(
             "Cookie 登录验证失败: "
             f"home_url={home_url!r}, title={home_title[:120]!r}, "

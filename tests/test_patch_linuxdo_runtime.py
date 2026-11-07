@@ -36,6 +36,7 @@ def test_patch_source_connects_all_runtime_guards() -> None:
     assert "co.set_proxy(proxy_url)" in patched
     assert "/session/current.json" in patched
     assert "home_html_size=" in patched
+    assert "通过未读计数标题" in patched
     assert "停止任务以避免额外登录请求" in patched
     assert "LinuxDO Cookie 认证测试通过" in patched
     assert "success_marker" in patched
