@@ -42,8 +42,27 @@ COOKIE_VALIDATION_REPLACEMENT = """        # 先检查页面元素，再使用 D
             )
             user_ele = None
 
+        if not user_ele:
+            # 前端水合有延迟，首帧常常还没有用户菜单，短轮询避免误判。
+            for _ in range(8):
+                time.sleep(1)
+                try:
+                    user_ele = self.page.ele("@id=current-user")
+                except Exception:
+                    user_ele = None
+                if user_ele:
+                    break
+
         if user_ele:
             logger.info("Cookie 登录验证成功 (通过 current-user)")
+            return True
+
+        # 重试后重新取 HTML：Discourse 的 head 里只有已登录会话才写
+        # <meta id="data-current-user" data-user-id="...">，它不受 API 挑战影响。
+        home_html = self.page.html or ""
+        lower_home = home_html.lower()
+        if 'id="data-current-user"' in lower_home or "data-current-user-id" in lower_home:
+            logger.info("Cookie 登录验证成功 (通过 data-current-user)")
             return True
 
         try:
