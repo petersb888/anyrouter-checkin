@@ -153,6 +153,21 @@ TOPIC_LIST_REPLACEMENT = """    def click_topic(self):
             except Exception:
                 topic_list = None
             time.sleep(2)
+        if not topic_list:
+            # WAF 有时只放行首屏壳页面，刷新一次让 Discourse 重新拉取列表数据。
+            try:
+                self.page.refresh()
+            except Exception:
+                pass
+            time.sleep(5)
+            for _attempt in range(6):
+                try:
+                    topic_list = self.page.ele("@id=list-area", timeout=5).eles(".:title")
+                    if topic_list:
+                        break
+                except Exception:
+                    topic_list = None
+                time.sleep(2)
         if not topic_list:"""
 
 LOGIN_FAILURE_NEEDLE = """            if not login_res:  # 登录
