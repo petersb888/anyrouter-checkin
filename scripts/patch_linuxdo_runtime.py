@@ -138,6 +138,23 @@ COOKIE_FALLBACK_REPLACEMENT = """                if not login_res:
                     logger.error("Cookie 登录失败，停止任务以避免额外登录请求")
                     return"""
 
+TOPIC_LIST_NEEDLE = """    def click_topic(self):
+        topic_list = self.page.ele("@id=list-area").eles(".:title")
+        if not topic_list:"""
+
+TOPIC_LIST_REPLACEMENT = """    def click_topic(self):
+        # Cloudflare 挑战会让首页列表延迟渲染，先轮询等待再取元素，避免直接抛异常。
+        topic_list = None
+        for _attempt in range(12):
+            try:
+                topic_list = self.page.ele("@id=list-area", timeout=5).eles(".:title")
+                if topic_list:
+                    break
+            except Exception:
+                topic_list = None
+            time.sleep(2)
+        if not topic_list:"""
+
 LOGIN_FAILURE_NEEDLE = """            if not login_res:  # 登录
                 logger.warning("登录验证失败")"""
 
@@ -194,6 +211,12 @@ def patch_source(source: str) -> str:
         COOKIE_FALLBACK_NEEDLE,
         COOKIE_FALLBACK_REPLACEMENT,
         "Cookie 失败保护",
+    )
+    source = _replace_once(
+        source,
+        TOPIC_LIST_NEEDLE,
+        TOPIC_LIST_REPLACEMENT,
+        "首页主题列表等待",
     )
     source = _replace_once(
         source,

@@ -10,6 +10,7 @@ from scripts.patch_linuxdo_runtime import (
     IMPORT_NEEDLE,
     LOGIN_FAILURE_NEEDLE,
     PROXY_NEEDLE,
+    TOPIC_LIST_NEEDLE,
     patch_file,
     patch_source,
 )
@@ -22,6 +23,7 @@ def make_source() -> str:
             PROXY_NEEDLE,
             COOKIE_VALIDATION_NEEDLE,
             COOKIE_FALLBACK_NEEDLE,
+            TOPIC_LIST_NEEDLE,
             LOGIN_FAILURE_NEEDLE,
             AUTH_TEST_NEEDLE,
             COMPLETION_NEEDLE,
@@ -38,6 +40,7 @@ def test_patch_source_connects_all_runtime_guards() -> None:
     assert "home_html_size=" in patched
     assert "通过未读计数标题" in patched
     assert "通过 data-current-user" in patched
+    assert "@id=list-area\", timeout=5" in patched
     assert "停止任务以避免额外登录请求" in patched
     assert "LinuxDO Cookie 认证测试通过" in patched
     assert "success_marker" in patched
